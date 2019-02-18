@@ -1,0 +1,10 @@
+.git
+.gitignore
+.idea/
+node_modules/
+
+test
+coverage
+src
+jest.config.js
+tsconfig.json

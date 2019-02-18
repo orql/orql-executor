@@ -1,0 +1,27 @@
+{
+  "name": "orql-mapper",
+  "version": "0.0.1",
+  "description": "orql mapper framework",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --bail --runInBand",
+    "coverage": "jest --bail --runInBand --coverage"
+  },
+  "author": "qiushijie",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^23.3.11",
+    "@types/mysql": "^2.15.5",
+    "@types/sqlite3": "^3.1.3",
+    "jest": "^23.6.0",
+    "mysql": "^2.16.0",
+    "sqlite3": "^4.0.6",
+    "ts-jest": "^23.10.5",
+    "typescript": "^3.2.2"
+  },
+  "dependencies": {
+    "orql-parser": "^0.0.2"
+  }
+}
