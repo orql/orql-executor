@@ -1,13 +1,13 @@
 import {Post, PostTag, Role, Tag, User, UserInfo} from './schemas';
 import Session from '../src/Session';
-import orqlMapper from './orqlMapper';
+import orqlExecutor from './orqlExecutor';
 
 beforeAll(async () => {
-  await orqlMapper.sync('drop');
+  await orqlExecutor.sync('drop');
 });
 
 async function exec(callback: (session: Session) => void) {
-  const session = await orqlMapper.newSession();
+  const session = await orqlExecutor.newSession();
   await session.beginTransaction();
   await callback(session);
   await session.rollback();

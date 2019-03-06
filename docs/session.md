@@ -1,7 +1,7 @@
 # 创建session
 
 ```ts
-const session = await orqlMapper.newSession();
+const session = await orqlExecutor.newSession();
 ```
 
 ## orql
@@ -101,7 +101,7 @@ session.buildUpdate().delete('user', user);
 # 声明mapper
 
 ```ts
-import Mapper, {array, column, id, object} from '../src/mapper/MapperManager';
+import Mapper, {array, column, id, object} from 'orqlExecutor/lib/mapper/MapperManager';
 
 const userMapper = Mapper.create([
   id(),

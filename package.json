@@ -1,7 +1,7 @@
 {
-  "name": "orql-mapper",
+  "name": "orql-executor",
   "version": "0.0.1",
-  "description": "orql mapper framework",
+  "description": "orql executor",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {

@@ -1,4 +1,4 @@
-import orqlMapper from './orqlMapper';
+import orqlExecutor from './orqlExecutor';
 import Mapper, {array, column, id, object} from '../src/mapper/Mapper';
 import {Role, User} from './schemas';
 import Session from '../src/Session';
@@ -18,7 +18,7 @@ const userMapper = Mapper.create([
 ]);
 
 async function exec(callback: (session: Session) => void) {
-  const session = await orqlMapper.newSession();
+  const session = await orqlExecutor.newSession();
   await session.beginTransaction();
   await callback(session);
   await session.rollback();

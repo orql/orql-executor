@@ -1,24 +1,24 @@
-orql-mapper是orql(关系对象查询语言)的执行引擎,由typescript编写也支持javascript运行,支持以对象结构描述查询数据和筛选条件进行sql的查询。
+orql-executor是orql(关系对象查询语言)的执行引擎,由typescript编写也支持javascript运行,支持以对象结构描述查询数据和筛选条件进行sql的查询。
 
 # 安装
 
 yarn
 
 ```
-yarn add orql-mapper
+yarn add orql-executor
 ```
 npm
 
 ```
-npm install orql-mapper --save
+npm install orql-executor --save
 ```
 
 # 示例
 ```ts
-import OrqlMapper, {DataType, intPkAndGk} from 'orql-mapper';
-// js const {OrqlMapper, DataType, intPkAndGk} from 'orql-mapper';
+import OrqlExecutor, {DataType, intPkAndGk} from 'orql-executor';
+// js const {OrqlExecutor, DataType, intPkAndGk} from 'orql-executor';
 
-const orqlMapper = new OrqlMapper({
+const orqlExecutor = new OrqlExecutor({
   dialect: 'mysql' | 'sqlite3',
   connection: {
     host: 'localhost',
@@ -29,15 +29,15 @@ const orqlMapper = new OrqlMapper({
   }
 });
 
-orqlMapper.addSchema('user', {
+orqlExecutor.addSchema('user', {
   id: intPkAndGk(),
   name: DataType.String
 });
 
 const start = async () => {
-  await orqlMapper.sync('update');
-  const session = await orqlMapper.newSession();
-  const id = await orqlMapper.add('add user: {name}', {name: 'n0'});
+  await orqlExecutor.sync('update');
+  const session = await orqlExecutor.newSession();
+  const id = await orqlExecutor.add('add user: {name}', {name: 'n0'});
   // 自增id
   console.log(id);
   await session.close();
@@ -61,7 +61,7 @@ start().catch(err => console.error(err));
 在使用之前先创建实例,用于后续操作.
 
 ```ts
-const orqlMapper = new OrqlMapper({
+const orqlExecutor = new OrqlExecutor({
   dialect?: 'mysql' | 'sqlite3';
   connection?: {
     host?: string; // 数据库host,没有port使用默认port
@@ -75,10 +75,10 @@ const orqlMapper = new OrqlMapper({
 
 表结构同步
 
-orqlMapper.sync方法将当前的schema结构同步到数据库的表结构中,create直接创建,update修改表结构,delete先删除再创建.
+orqlExecutor.sync方法将当前的schema结构同步到数据库的表结构中,create直接创建,update修改表结构,delete先删除再创建.
 
 ```
-await orqlMapper.sync('create');
+await orqlExecutor.sync('create');
 ```
 
 # schema

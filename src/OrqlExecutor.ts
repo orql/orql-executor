@@ -3,7 +3,7 @@ import Session from './Session';
 import Schema, {SchemaOptions} from './Schema';
 import {Columns} from './SchemaManager';
 
-export default class OrqlMapper {
+export default class OrqlExecutor {
   readonly configuration: Configuration;
   constructor(options: ConfigurationOptions) {
     this.configuration = new Configuration(options);

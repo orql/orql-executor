@@ -1,13 +1,13 @@
-import orqlMapper from './orqlMapper';
+import orqlExecutor from './orqlExecutor';
 
 test('test create', async () => {
-  await orqlMapper.sync('create');
+  await orqlExecutor.sync('create');
 });
 
 test('test drop', async () => {
-  await orqlMapper.sync('drop');
+  await orqlExecutor.sync('drop');
 });
 
 test('test update', async () => {
-  await orqlMapper.sync('update');
+  await orqlExecutor.sync('update');
 });

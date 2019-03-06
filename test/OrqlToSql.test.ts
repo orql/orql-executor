@@ -1,9 +1,9 @@
-import orqlMapper from './orqlMapper';
+import orqlExecutor from './orqlExecutor';
 import OrqlToSql from '../src/sql/OrqlToSql';
 import MysqlDialect from '../src/dialect/MysqlDialect';
 import Parser from 'orql-parser';
 
-const orqlToSql = new OrqlToSql(orqlMapper.configuration.schemaManager, new MysqlDialect());
+const orqlToSql = new OrqlToSql(orqlExecutor.configuration.schemaManager, new MysqlDialect());
 
 function toQuerySql(orql: string, options: {offset?: number, limit?: number} = {}): string {
   const node = Parser.parse(orql);

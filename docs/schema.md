@@ -1,4 +1,4 @@
-orql-mapper的schema对应到数据库中相应的表
+orql-executor的schema对应到数据库中相应的表
 
 # 添加schema
 
@@ -11,21 +11,21 @@ orql-mapper的schema对应到数据库中相应的表
 * @param columns columns data type or column options or association options
 * @param options
 */
-orqlMapper.addSchema(name, columns: Columns}, options);
+orqlExecutor.addSchema(name, columns: Columns}, options);
 ```
 
 例子
 
 ```ts
-import {DataType, longPkAndGk, intPkAndGk} from 'orql-mapper';
-//js const {orqlMapper, DataType, LongPkAndGk, intPkAndGk} = require('orql-mapper');
+import OrqlExecutor, {DataType, longPkAndGk, intPkAndGk} from 'orql-executor';
+//js const {OrqlExecutor DataType, LongPkAndGk, intPkAndGk} = require('orql-executor');
 
-orqlMapper.addSchema('user', {
+orqlExecutor.addSchema('user', {
   id: longPkAndGk(),
   name: DataType.String
 });
 
-orqlMapper.addSchema('role', {
+orqlExecutor.addSchema('role', {
   id: intPkAndGk(),
   name: DataType.String
 }, {
@@ -99,14 +99,14 @@ belongTo(refName: string options?: AssociationOptions);
 orql: `user : {id, name, role : {id, name}}`
 
 ```ts
-import {belongsTo} from 'orql-mapper';
+import {belongsTo} from 'orql-executor';
 
-orqlMapper.addSchema('user', {
+orqlExecutor.addSchema('user', {
   id: intPkAndGk(),
   name: DataType.String,
   role: belongsTo('role')
 });
-orqlMapper.addSchema('role', {
+orqlExecutor.addSchema('role', {
   id: intPkAndGk(),
   name: DataType.String
 });
@@ -127,12 +127,12 @@ hasOne(refName: string, options?: AssociationOptions)
 orql: `user : {name, info : {id, avatar}}`
 
 ```ts
-orqlMapper.addSchema('user', {
+orqlExecutor.addSchema('user', {
   id: intPkAndGk(),
   name: DataType.String,
   info: hasOne('userInfo')
 });
-orqlMapper.addSchema('userInfo', {
+orqlExecutor.addSchema('userInfo', {
   id: intPkAndGk(),
   avatar: DataType.String,
   user: belongsTo('user')
@@ -154,7 +154,7 @@ hasMany(refName: string, options?: AssociationOptions)
 orql: `role : {id, name, users: [id, name]}`
 
 ```ts
-orqlMapper.addSchema('role', {
+orqlExecutor.addSchema('role', {
   id: intPkAndGk(),
   name: DataType.String,
   users: hasMany('user')
@@ -179,17 +179,17 @@ orql: `post : {id, title, tags: [id, name]}`
 orql: `tag: {id, name, posts: [id, title]}`
 
 ```ts
-orqlMapper.addSchema('post', {
+orqlExecutor.addSchema('post', {
   id: intPkAndGk(),
   title: DataType.String,
   tags: belongsToMany('tag', 'postTag')
 });
-orqlMapper.addSchema('tag', {
+orqlExecutor.addSchema('tag', {
   id: intPkAndGk(),
   name: DataType.String,
   posts: belongsToMany('post', 'postTag')
 });
-orqlMapper.addSchema('postTag', {
+orqlExecutor.addSchema('postTag', {
   post: belongsTo('post'),
   tag: belongsTo('tag')
 });

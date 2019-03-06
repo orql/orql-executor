@@ -1,5 +1,5 @@
 import {AssociationOptions, AssociationType, DataType} from './Schema';
-import OrqlMapper from './OrqlMapper';
+import OrqlExecutor from './OrqlExecutor';
 
 export function intPkAndGk() {
   return {type: DataType.Int, pkAndGk: true};
@@ -25,6 +25,6 @@ export function belongsToMany(refName: string, middleName: string, options?: Ass
   return {type: AssociationType.BelongsToMany, refName, middleName, ...options};
 }
 
-export {DataType, OrqlMapper};
+export {DataType, OrqlExecutor};
 
-export default OrqlMapper;
+export default OrqlExecutor;

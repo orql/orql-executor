@@ -1,6 +1,6 @@
-import orqlMapper from './orqlMapper';
+import orqlExecutor from './orqlExecutor';
 
-const configuration = orqlMapper.configuration;
+const configuration = orqlExecutor.configuration;
 
 const schemaManager = configuration.schemaManager;
 

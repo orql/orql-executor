@@ -1,7 +1,7 @@
 import path from 'path';
-import OrqlMapper, {belongsTo, belongsToMany, DataType, hasMany, hasOne, intPkAndGk} from '../src';
+import OrqlExecutor, {belongsTo, belongsToMany, DataType, hasMany, hasOne, intPkAndGk} from '../src';
 
-const orqlMapper = new OrqlMapper({
+const orqlExecutor = new OrqlExecutor({
   // dialect: 'sqlite3',
   dialect: 'mysql',
   connection: {
@@ -11,7 +11,7 @@ const orqlMapper = new OrqlMapper({
     username: 'root'
   }
 });
-orqlMapper.addSchema('user', {
+orqlExecutor.addSchema('user', {
   id: intPkAndGk(),
   name: DataType.String,
   password: DataType.String,
@@ -19,30 +19,30 @@ orqlMapper.addSchema('user', {
   posts: hasMany('post', {refKey: 'authorId'}),
   info: hasOne('userInfo')
 });
-orqlMapper.addSchema('role', {
+orqlExecutor.addSchema('role', {
   id: intPkAndGk(),
   name: DataType.String
 });
-orqlMapper.addSchema('userInfo', {
+orqlExecutor.addSchema('userInfo', {
   id: intPkAndGk(),
   avatar: DataType.String,
   user: belongsTo('user')
 });
-orqlMapper.addSchema('post', {
+orqlExecutor.addSchema('post', {
   id: intPkAndGk(),
   title: DataType.String,
   content: DataType.String,
   author: belongsTo('user'),
   tags: belongsToMany('tag', 'postTag')
 });
-orqlMapper.addSchema('tag', {
+orqlExecutor.addSchema('tag', {
   id: intPkAndGk(),
   name: DataType.String,
   posts: belongsToMany('post', 'postTag')
 });
-orqlMapper.addSchema('postTag', {
+orqlExecutor.addSchema('postTag', {
   post: belongsTo('post'),
   tag: belongsTo('tag')
 });
 
-export default orqlMapper;
+export default orqlExecutor;
