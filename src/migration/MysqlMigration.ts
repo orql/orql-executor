@@ -12,10 +12,6 @@ export = class MysqlMigration implements Migration {
     }
     for (const [name, schema] of schemas.entries()) {
       await this.updateFks(session, schema, database);
-      // const refColumns = schema.columns.filter(column => column.refKey);
-      // for (const column of refColumns) {
-      //   await this.createFK(session, schema, column);
-      // }
     }
   }
   private async createTable(session: Session, schema: Schema) {
@@ -23,11 +19,11 @@ export = class MysqlMigration implements Migration {
     await session.nativeUpdate(sql);
   }
   private async createFK(session: Session, schema: Schema, column: Column) {
-    const sql = `alter table ${schema.name} add constraint ${this.genFK(column)} foreign key(${column.field}) REFERENCES ${column.ref!.table}(${column.ref!.getIdColumn()!.field})`;
+    const sql = `alter table ${schema.name} add constraint ${this.genFK(schema, column)} foreign key(${column.field}) REFERENCES ${column.ref!.table}(${column.ref!.getIdColumn()!.field})`;
     await session.nativeUpdate(sql);
   }
-  private genFK(column: Column) {
-    return `fk_${column.field}`;
+  private genFK(schema: Schema, column: Column) {
+    return `fk_${schema.table}_${column.field}`;
   }
   genCreateColumn(column: Column): string {
     let sql = `${column.field} ${this.genColumnType(column)}`;
@@ -110,7 +106,7 @@ export = class MysqlMigration implements Migration {
         const fk = fks[index];
         if (column.ref!.table != fk.get('ref')) {
           // 外键已指向另外表
-          await session.nativeUpdate(`alter table ${schema.table} drop foreign key ${this.genFK(column)}`);
+          await session.nativeUpdate(`alter table ${schema.table} drop foreign key ${this.genFK(schema, column)}`);
           await this.createFK(session, schema, column);
         }
       } else {
