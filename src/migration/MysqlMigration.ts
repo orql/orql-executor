@@ -1,6 +1,6 @@
 import Migration from './Migration';
 import Session from '../Session';
-import Schema, {Column} from '../Schema';
+import Schema, {Column, DataType} from '../Schema';
 import {QueryResult} from '../database/Database';
 
 export = class MysqlMigration implements Migration {
@@ -15,6 +15,7 @@ export = class MysqlMigration implements Migration {
     }
   }
   private async createTable(session: Session, schema: Schema) {
+    if (schema.columns.length == 0) return;
     const sql = `create table if not exists ${schema.table} (${schema.columns.map(column => this.genCreateColumn(column)).join(', ')})`;
     await session.nativeUpdate(sql);
   }
@@ -26,7 +27,7 @@ export = class MysqlMigration implements Migration {
     return `fk_${schema.table}_${column.field}`;
   }
   genCreateColumn(column: Column): string {
-    let sql = `${column.field} ${this.genColumnType(column)}`;
+    let sql = `${column.field} ${this.genColumnTypeAndLength(column)}`;
     if (column.primaryKey) sql += ' primary key';
     if (column.generatedKey) sql += ' auto_increment';
     if (!column.primaryKey && column.required) sql += ' not null';
@@ -35,10 +36,17 @@ export = class MysqlMigration implements Migration {
   genColumnType(column: Column): string {
     let type = column.type.toString();
     switch (type) {
-      case 'string':
+      case DataType.String:
         type = 'varchar';
         break;
+      case DataType.Long:
+        type = 'bigint'
+        break;
     }
+    return type;
+  }
+  genColumnTypeAndLength(column: Column): string {
+    const type = this.genColumnType(column);
     return column.length != undefined && column.length > 0 ? `${type}(${column.length})` : `${type}`;
   }
   async drop(session: Session): Promise<void> {
@@ -75,8 +83,10 @@ export = class MysqlMigration implements Migration {
           if (this.genColumnType(column) != type) change = true;
           if (column.length && column.length != length) change = true;
           if (!column.primaryKey) {
-            if (column.required && field.get('nullable') != 'YES') change = true;
-            if (!column.required && field.get('nullable') != 'NO') change = true;
+            // 不可空
+            if (column.required && field.get('nullable') != 'NO') change = true;
+            // 可空
+            if (!column.required && field.get('nullable') != 'YES') change = true;
           }
           if (change) {
             // 修改字段
@@ -120,7 +130,7 @@ export = class MysqlMigration implements Migration {
     return result.length > 0 ? result[0].get(0) == schema.table : false;
   }
   getTypeAndLength(type: string): [string, number] {
-    const arr = /(.+?)\((.+?)\)/.exec('int(11)')!;
+    const arr = /(.+?)\((.+?)\)/.exec(type)!;
     return [arr[1], parseInt(arr[2])];
   }
 }
