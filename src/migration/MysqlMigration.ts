@@ -33,20 +33,23 @@ export = class MysqlMigration implements Migration {
     if (!column.primaryKey && column.required) sql += ' not null';
     return sql;
   }
-  genColumnType(column: Column): string {
-    let type = column.type.toString();
-    switch (type) {
+  genColumnType(column: Column, type: 'create' | 'query'): string {
+    let columnType = column.type.toString();
+    switch (columnType) {
       case DataType.String:
-        type = 'varchar';
+        columnType = 'varchar';
         break;
       case DataType.Long:
-        type = 'bigint'
+        columnType = 'bigint'
+        break;
+      case DataType.Boolean:
+        if (type == 'query') columnType = 'tinyint';
         break;
     }
-    return type;
+    return columnType;
   }
   genColumnTypeAndLength(column: Column): string {
-    const type = this.genColumnType(column);
+    const type = this.genColumnType(column, 'create');
     return column.length != undefined && column.length > 0 ? `${type}(${column.length})` : `${type}`;
   }
   async drop(session: Session): Promise<void> {
@@ -80,7 +83,7 @@ export = class MysqlMigration implements Migration {
           let change = false;
           const field = fields[index];
           const [type, length] = this.getTypeAndLength(field.get('type'));
-          if (this.genColumnType(column) != type) change = true;
+          if (this.genColumnType(column, 'query') != type) change = true;
           if (column.length && column.length != length) change = true;
           if (!column.primaryKey) {
             // 不可空
@@ -129,8 +132,9 @@ export = class MysqlMigration implements Migration {
     const result = await session.nativeQuery(`show tables like '${schema.table}'`);
     return result.length > 0 ? result[0].get(0) == schema.table : false;
   }
-  getTypeAndLength(type: string): [string, number] {
-    const arr = /(.+?)\((.+?)\)/.exec(type)!;
+  getTypeAndLength(type: string): [string, number?] {
+    const arr = /(.+?)\((.+?)\)/.exec(type);
+    if (!arr) return [type, undefined];
     return [arr[1], parseInt(arr[2])];
   }
 }
