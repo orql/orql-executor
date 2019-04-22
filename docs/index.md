@@ -1,88 +1,105 @@
-orql-executor是orql(关系对象查询语言)的执行引擎,由typescript编写也支持javascript运行,支持以对象结构描述查询数据和筛选条件进行sql的查询。
-
 # 安装
 
 yarn
 
 ```
 yarn add orql-executor
-```
-npm
 
-```
-npm install orql-executor --save
+// 安装以下驱动之一
+yarn add mysql
+yarn add sqlite3
 ```
 
-# 示例
+# 开始使用
+
+## 创建实例
+
+使用configuration初始化orqlExecutor实例,实例用于管理数据库连接和项目实体等,提供添加schema,创建session等方法.
+
+typescript
+
 ```ts
-import OrqlExecutor, {DataType, intPkAndGk} from 'orql-executor';
-// js const {OrqlExecutor, DataType, intPkAndGk} from 'orql-executor';
+import OrqlExecutor from 'orql-executor';
 
-const orqlExecutor = new OrqlExecutor({
-  dialect: 'mysql' | 'sqlite3',
+const orqlExecutor = new OrqlExecutor(configuration);
+```
+
+javascript
+
+```js
+const {OrqlExecutor} = require('orql-executor');
+```
+
+## 配置
+
+```
+configuration = {
   connection: {
-    host: 'localhost',
-    // sqlite3 db路径
-    path: path.resolve(__dirname, './test.db'),
-    database: 'myorm',
-    username: 'root'
-  }
-});
+    ...
+  },
+  dialect: ...
+};
+```
+
+### connection
+
+数据库连接相关配置,包括数据库host,数据库用户名和密码等,数据库驱动根据连接配置去连接数据库.
+
+* host  数据库host
+* database  数据库
+* username  用户名
+* password  密码
+* path  sqlite3数据库路径
+
+### dialect
+
+不同数据库对于sql语法要求有所出入,dialect用于声明不同类似的数据库的sql方言,框架根据dialect生成适配相应数据库的sql语句.在迁移到其他数据库的时候,系统自动完成sql到目标数据库的转换.
+
+#### mysql
+`dialect: 'mysql'`
+
+#### sqlite3
+`dialect: 'sqlite3'`
+
+
+# schema
+每一个schema对应数据库中的一张表,schema中的结构与数据库表的结构一致,数据库中外键对应schema中的关联对象.
+
+## 添加schema
+```ts
+import {DataType, intPkAndGk} from 'orql-executor';
 
 orqlExecutor.addSchema('user', {
   id: intPkAndGk(),
   name: DataType.String
 });
-
-const start = async () => {
-  await orqlExecutor.sync('update');
-  const session = await orqlExecutor.newSession();
-  const id = await orqlExecutor.add('add user: {name}', {name: 'n0'});
-  // 自增id
-  console.log(id);
-  await session.close();
-}
-
-start().catch(err => console.error(err));
-
 ```
 
-## 方言
-目前仅支持mysql和sqlite3,后续版本将会添加对更多数据库支持.
+schema声明请查看[schema使用文档](./schema.md).
 
-### mysql
-安装mysql驱动依赖 `yarn add mysql`
-
-### sqlite3
-安装sqlite3驱动依赖 `yarn add sqlite3`
-
-# 实例创建
-
-在使用之前先创建实例,用于后续操作.
-
-```ts
-const orqlExecutor = new OrqlExecutor({
-  dialect?: 'mysql' | 'sqlite3';
-  connection?: {
-    host?: string; // 数据库host,没有port使用默认port
-    database?: string; // 数据库名
-    username?: string; // 用户名
-    password?: string; // 无密码不需要填写
-    path?: string; // sqlite3数据库路径
-  }
-});
-```
-
-表结构同步
-
-orqlExecutor.sync方法将当前的schema结构同步到数据库的表结构中,create直接创建,update修改表结构,delete先删除再创建.
+## 表结构同步
+schema中记录实体信息,对应到数据库相应的表中,如数据库未创建相应的表,使用orqlExecutor.sync方法将当前的schema结构同步到数据库的表结构中,create直接创建,update修改表结构,delete先删除再创建.
 
 ```
 await orqlExecutor.sync('create');
 ```
 
-# schema
-每一个schema对应数据库中的一张表,schema中的结构与数据库表的结构一致,在schema中可以配置数据库中不支持的对象关联关系并映射到对应的表外键字段上.schema声明请查看[schema使用文档](./schema.md).
-
 # session
-一个session表示当前数据库的一个活动,session中提供orql语句的执行和事务管理等功能.更多请查看[session使用文档](./session.md).
+一个session表示当前数据库的一个活动对象,与数据库连接所关联,session中提供orql语句执行和事务管理等功能.对数据库进行操作均需要使用session对象,在使用session后确保使用close关闭session.
+
+```ts
+const session = await orqlExecutor.newSession();
+const result = await session.query(orql, params);
+```
+
+更多请查看[session使用文档](./session.md).
+
+# orql
+orql是使用对象键和对象关联树来描述对象结构的dsl,框架根据其描述生成相应的sql语句,在执行后将查询结构映射回其描述的对象中.
+
+```
+add user : {name}
+query user: {id, name}
+```
+
+更多使用请查看[orql使用文档](./orql.md).

@@ -1,6 +1,16 @@
-orql是Object Relational Query Language的缩写,是一种用于关系查询的dsl,结构与json类似,{}为object类型,[]为array类型。并支持查询条件和排序等高级操作。
+# orql
+orql是Object Relational Query Language的缩写,是一种用于关系查询的dsl,结构与json类似,{}为object类型,[]为array类型。支持查询条件和排序等高级操作。
+
+## 语法
 
 op root(exp order) : [column, object(exp): {}, array(exp): []]
+
+* op 操作 支持query add update delete count
+* root 根对象名,即需要操作的对象名
+* exp 表达式,支持&& ||逻辑操作和列与列直接比较操作
+* order 排序,支持声明多个排序,order id desc, name createAt asc, updateAt,默认为asc.
+* object 关联的object对象,使用{...}来声明需要的属性.
+* array 关联的array对象,使用[...]来声明需要的属性.
 
 ## query
 
@@ -20,7 +30,9 @@ op root(exp order) : [column, object(exp): {}, array(exp): []]
 
 `query user(phone = $phone && password = $password || email = $email && password = $password) : {id, name}`
 
-exp支持比较column与column或者值或者参数和exp使用&&和||来进行比较。column必须是schema中声明的column，外键的column被插入到相关的schema中,也可以直接使用。
+exp支持比较column与column或者值或者参数和exp使用&&和||来进行比较。
+
+array和object可以不查询数据,只使用表达式来进行筛选,在父对象中也可以使用外键直接查询,避免与子对象join关联.
 
 外键查询
 
@@ -59,10 +71,10 @@ items中可以使用*来表示获取全部的字段，不包括关联属性，�
 `query user : {*, !password}`
 
 ### object
-object在orql中表示一个对象,在筛选数据时关联schema不一定需要返回值,即object(exp)后面没有带相关的items.
+object在orql中表示一个对象,在筛选数据时关联schema不一定需要返回值,即object(exp)后面没有带相关的items.如无数据,返回为undefined对象.
 
 ### array
-array在orql中表示一个数组.
+array在orql中表示一个数组,如无数据返回为空数组.
 
 ## count
 

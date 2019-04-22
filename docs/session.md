@@ -1,10 +1,12 @@
-# 创建session
+# session
+
+## 创建session
 
 ```ts
 const session = await orqlExecutor.newSession();
 ```
 
-## orql
+## orql操作
 
 ### 查询
 
@@ -49,11 +51,15 @@ results[0].get(0);
 results[0].get('name');
 ```
 
+查询返回结果为数组,在数组的子对象中,使用get访问属性,可以使用数字索引或者名称索引.
+
 ### native update
 
 ```ts
 const row = await session.nativeUpdate(sql, params);
 ```
+
+执行后返回影响的条数.
 
 ## orql builder
 
@@ -118,11 +124,47 @@ const userMapper = Mapper.create([
 ]);
 ```
 
-# mapper使用
+mapper对象为一个数组,object array必须声明id,用于筛选特定的数据.
+
+## id()
+当前实体在sql查询中的主键,默认name为id,也可使用{name: 'name'}来声明.field默认也为id,可使用{field: 'field'}声明.
+
+## mapper column
+mapper column可以是当前键的名称`name`或者`column('name')`,默认键名与sql列名一样,column对应需要映射对象的属性,如field与属性名称不一致则使用`column('name', {field: 'field'});`来声明.
+
+## mapper object
+mapper object对应映射对象的关联对象,如`user -> role`需要用object来声明role.
+
+```ts
+object(name, children);
+```
+
+## mapper array
+mapper array对应映射对象的关联数组,如`user -> posts`需要用array类声明posts.
+
+
+
+## mapper使用
 
 ```ts
 session.nativeQuery(sql, params, mapper);
 ```
+
+user mapper
+
+```ts
+const userMapper = Mapper.create([
+  id(),
+  'name',
+  'password',
+  object('id', [
+    id({field: 'roleId'}),
+    column('name', {field: 'roleName'})
+  ])
+]);
+```
+
+获取user和其关联role
 
 ```ts
 const users = await session.nativeQuery('select user.id as id, user.name as name, user.password as password, role.id as roleId, role.name as roleName from user inner join role', {}, userMapper) as User[];

@@ -1,24 +1,15 @@
-orql-executor的schema对应到数据库中相应的表
+schema对应数据库中的表,普通列与数据库中字段一一对应,关联关系对应数据库中的外键.
 
-# 添加schema
-
-函数原型
+# schema
 
 ```ts
-/**
-* add schema
-* @param name  schema name
-* @param columns columns data type or column options or association options
-* @param options
-*/
-orqlExecutor.addSchema(name, columns: Columns}, options);
+orqlExecutor.addSchema(name, columns: Columns, options?);
 ```
 
-例子
+添加用户和角色
 
 ```ts
 import OrqlExecutor, {DataType, longPkAndGk, intPkAndGk} from 'orql-executor';
-//js const {OrqlExecutor DataType, LongPkAndGk, intPkAndGk} = require('orql-executor');
 
 orqlExecutor.addSchema('user', {
   id: longPkAndGk(),
@@ -33,7 +24,43 @@ orqlExecutor.addSchema('role', {
 });
 ```
 
-数据类型 data type
+## schema options
+
+* table 表名,默认为schema名
+
+# column
+
+column是一个包含数据类型和长度还有是否可以非空等选项的对象.
+
+name列,类型为string,长度为16,不能为空,在数据库中field名为name
+
+```ts
+name: {type: DataType.String, length: 16, required: true, field: 'name'}
+```
+
+当然也可以是一个DataType.
+
+name列,类型未string,其他选项为默认值.
+
+```
+name: DataType.String
+```
+
+也可以把常用的options封装成一个函数使用.
+
+直接声明
+
+```ts
+id: {type: DataType.Long, primaryKey: true, generatedKey: true}
+```
+
+使用函数声明
+
+```ts
+id: longPkAndGk()
+```
+
+## column data Type
 
 * string: DataType.String // 字符串
 * int: DataType.Int // int
@@ -43,7 +70,7 @@ orqlExecutor.addSchema('role', {
 * enum: DataType.Enum // 枚举
 * bool: DataType.Boolean // bool值
 
-类可选选型 column options
+## column options
 
 * field: 数据库field,默认为name
 * type: 数据类型
@@ -53,39 +80,16 @@ orqlExecutor.addSchema('role', {
 * generatedKey: 自增
 * pkAndGk: 自增主键
 
-关联关系配置 association options
-
-* refName: 关联schema名
-* type: AssociationType
-* refKey: 关联键会自动默认设置
-* required: 是否必须
-* middleName: 多对多关联中间schema名,在多对多种必选
-* middleKey: 中间schema连接ref的关联键
-
-关联类型AssociationType
-
-* AssociationType.BelongsTo 
-* AssociationType.HasOne 
-* AssociationType.HasMany 
-* AssociationType.BelongsToMany
-
-辅助声明函数
-
-```ts
-intPkAndGk() // {type: DataType.Int, pkAndGk: true}
-longPkAndGk() // {type: DataType.Long, pkAndGk: true}
-belongsTo()
-hasOne()
-hasMany()
-belongsToMany()
-```
-
 # 关联
 
-关联关系与对象中的关联关系是一致的,在当前表中可以存储另外一张表的引用外键,将两张表通过外键关联起来,在查询出来的结果中将关联关系映射到对象中.
+关联关系与对象中的关联关系是一致的,在当前表中可以存储另外一张表的引用外键,将两张表通过外键关联起来,在查询出来的结果中将关联表映射到对象中.
+
+数据库 `user表 -> roleId外键 -> role表`
+
+对象 `user对象 -> role对象`
 
 ## belongsTo
-belongsTo用于声明一个Schema中某个属性属于另外一个Schema,用于描述N:1的N方或1:1的属于方关系,如User Schema中的role属于一个Role(N:1),UserInfo中的user属于User(1:1)。refKey是该属性在当前Schema表中的外键。
+belongsTo用于声明一个Schema中某个属性属于另外一个Schema,用于描述N:1的N方或1:1的属于方关系,如User Schema中的role属于一个Role(N:1),UserInfo中的user属于User(1:1)。refKey是该属性在当前Schema表中的外键,默认为属性名Id。
 
 ```ts
 /**
@@ -113,7 +117,7 @@ orqlExecutor.addSchema('role', {
 ```
 
 ## hasOne
-hasOne用于声明一个Schema中某个属性是另外一个Schema,用于描述1:1的拥有方关系,如User Schema中的info拥有一个UserInfo。refKey是该属性在ref Schema表中的外键。
+hasOne用于声明一个Schema中某个属性是另外一个Schema,用于描述1:1的拥有方关系,如User Schema中的info拥有一个UserInfo。refKey是该属性在ref Schema表中的外键,默认为当前schema名Id。
 
 ```ts
 /**
@@ -140,7 +144,7 @@ orqlExecutor.addSchema('userInfo', {
 ```
 
 ## hasMany
-hasMany用于声明一个Schema中某个属性拥有多个另外一个Schema,用于描述1:N关系,如Role Schema的users拥有多个User。refKey是该属性在ref Schema表中的外键。
+hasMany用于声明一个Schema中某个属性拥有多个另外一个Schema,用于描述1:N关系,如Role Schema的users拥有多个User。refKey是该属性在ref Schema表中的外键,默认为当前schema名Id。
 
 ```ts
 /**
@@ -162,7 +166,7 @@ orqlExecutor.addSchema('role', {
 ```
 
 ## belongsToMany
-belongsToMany用于声明一个Schema中某个属性拥有多个另外一个Schema。用于描述N:M关系,如一个Post拥有多个Tag,一个Tag也拥有多个Post。current -> middle -> ref,middle是N:M关系的中间schema。
+belongsToMany用于声明一个Schema中某个属性拥有多个另外一个Schema.用于描述N:M关系,如一个Post拥有多个Tag,一个Tag也拥有多个Post.current -> middle -> ref,middle是N:M关系的中间schema.refKey为当前schema名Id,middleKey默认为ref schema名Id.
 
 ```ts
 /**
@@ -194,3 +198,21 @@ orqlExecutor.addSchema('postTag', {
   tag: belongsTo('tag')
 });
 ```
+
+## association options
+
+关联关系配置 association options
+
+* refName: 关联schema名
+* type: AssociationType
+* refKey: 关联键会自动默认设置
+* required: 是否必须
+* middleName: 多对多关联中间schema名,在多对多种必选
+* middleKey: 中间schema连接ref的关联键
+
+关联类型AssociationType
+
+* AssociationType.BelongsTo 
+* AssociationType.HasOne 
+* AssociationType.HasMany 
+* AssociationType.BelongsToMany
