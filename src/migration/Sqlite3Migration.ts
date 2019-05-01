@@ -1,4 +1,4 @@
-import Migration from './Migration';
+import Migration, {DatabaseColumn, DatabaseFKColumn} from './Migration';
 import Session from '../Session';
 import Schema, {Column} from '../Schema';
 import {QueryResult} from '../database/Database';
@@ -10,7 +10,7 @@ export = class Sqlite3Migration implements Migration {
       await this.createTable(session, schema);
     }
   }
-  private async createTable(session: Session, schema: Schema) {
+  async createTable(session: Session, schema: Schema) {
     const columns = schema.columns.map(column => this.genCreateColumn(column));
     const sql = `create table if not exists ${schema.table} (${columns.join(', ')})`;
     await session.nativeUpdate(sql);
@@ -65,5 +65,46 @@ export = class Sqlite3Migration implements Migration {
         }
       }
     }
+  }
+
+  async addColumn(session: Session, schema: Schema, column: Column) {
+  }
+
+  async addFKColumn(session: Session, schema: Schema, column: Column) {
+  }
+
+  async existsTable(session, Session, schema: Schema): Promise<boolean> {
+    return false;
+  }
+
+  async queryAllColumn(session: Session, schema: Schema): Promise<DatabaseColumn[]> {
+    return [];
+  }
+
+  async queryAllFKColumn(session: Session, schema: Schema): Promise<DatabaseFKColumn[]> {
+    return [];
+  }
+
+  async queryColumn(session: Session, schema: Schema, column: Column): Promise<DatabaseColumn | undefined> {
+    return undefined;
+  }
+
+  async queryFKColumn(session: Session, schema: Schema, column: Column): Promise<DatabaseFKColumn | undefined> {
+    return undefined;
+  }
+
+  shouldUpdateColumn(column: Column, databaseColumn: DatabaseColumn): boolean {
+    return false;
+  }
+
+  shouldUpdateFKColumn(column: Column, fkColumn: DatabaseFKColumn): boolean {
+    return false;
+  }
+
+  async updateColumn(session: Session, schema: Schema, column: Column) {
+    return undefined;
+  }
+
+  async updateFKColumn(session: Session, schema: Schema, column: Column) {
   }
 }
