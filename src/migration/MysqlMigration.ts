@@ -171,7 +171,6 @@ export = class MysqlMigration implements Migration {
     await session.nativeUpdate(`alter table ${schema.table} drop foreign key ${this.genFK(schema, column)}`);
     await this.addFKColumn(session, schema, column);
   }
-
   async queryAllFKColumn(session: Session, schema: Schema): Promise<DatabaseFKColumn[]> {
     const sql = `select column_name as name, referenced_table_name as ref, referenced_column_name as refKey from information_schema.key_column_usage where constraint_schema = database() && table_name = '${schema.table}' && constraint_name <> 'PRIMARY'`;
     const results = await session.nativeQuery(sql) as QueryResult[];

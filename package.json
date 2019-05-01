@@ -1,6 +1,6 @@
 {
   "name": "orql-executor",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "orql executor",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -22,6 +22,6 @@
     "typescript": "^3.2.2"
   },
   "dependencies": {
-    "orql-parser": "^0.0.2"
+    "orql-parser": "0.0.3"
   }
 }

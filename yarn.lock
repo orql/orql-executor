@@ -2266,9 +2266,9 @@ optionator@^0.8.1:
     type-check "~0.3.2"
     wordwrap "~1.0.0"
 
-orql-parser@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.npmjs.org/orql-parser/-/orql-parser-0.0.2.tgz#bbb18655790ba74a1382b7832dabf297b263e7a9"
+orql-parser@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/orql-parser/-/orql-parser-0.0.3.tgz#68c48626a5f42f734691c7027f5651f72b1ea8c0"
 
 os-homedir@^1.0.0:
   version "1.0.2"
