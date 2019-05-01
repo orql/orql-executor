@@ -1,4 +1,4 @@
-import Migration, {DatabaseColumn, DatabaseFKColumn} from './Migration';
+import Migration, {DatabaseColumn} from './Migration';
 import Session from '../Session';
 import Schema, {Column} from '../Schema';
 import {QueryResult} from '../database/Database';
@@ -44,7 +44,7 @@ export = class Sqlite3Migration implements Migration {
     }
   }
   async existTable(session: Session, schema: Schema): Promise<boolean> {
-    const result = await session.nativeQuery(`SELECT count(*) FROM sqlite_master where type='table' and name='${schema.table}'`);
+    const result = await session.nativeQuery(`select count(*) FROM sqlite_master where type='table' and name='${schema.table}'`);
     return result[0].get(0) == 1;
   }
   async update(session: Session): Promise<void> {
@@ -81,15 +81,7 @@ export = class Sqlite3Migration implements Migration {
     return [];
   }
 
-  async queryAllFKColumn(session: Session, schema: Schema): Promise<DatabaseFKColumn[]> {
-    return [];
-  }
-
   async queryColumn(session: Session, schema: Schema, column: Column): Promise<DatabaseColumn | undefined> {
-    return undefined;
-  }
-
-  async queryFKColumn(session: Session, schema: Schema, column: Column): Promise<DatabaseFKColumn | undefined> {
     return undefined;
   }
 
@@ -97,14 +89,7 @@ export = class Sqlite3Migration implements Migration {
     return false;
   }
 
-  shouldUpdateFKColumn(column: Column, fkColumn: DatabaseFKColumn): boolean {
-    return false;
-  }
-
   async updateColumn(session: Session, schema: Schema, column: Column) {
     return undefined;
-  }
-
-  async updateFKColumn(session: Session, schema: Schema, column: Column) {
   }
 }
