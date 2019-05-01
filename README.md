@@ -57,4 +57,4 @@ yarn add sqlite3
 * [orql-baas](https://www.github.com/orql/orql-baas) 基于orql的可视化后端云
 
 # 其他语言
-* [java](https://www.github.com/orql/java-executor)
+* [java](https://github.com/orql/orql-executor-java)
