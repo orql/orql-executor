@@ -38,6 +38,7 @@ import BaseDialect from '../dialect/BaseDialect';
 import SqlNode from './SqlNode';
 import SchemaManager from '../SchemaManager';
 import has = Reflect.has;
+import {Params} from './NamedParamSql';
 
 interface QueryWrapper {
   currentItem: OrqlItem;
@@ -277,15 +278,15 @@ export default class OrqlToSql {
     }
   }
 
-  toAdd(node: OrqlNode): string {
-    if (this.sqlCaches.has(node)) return this.dialect.gen(this.sqlCaches.get(node)!);
+  toAdd(node: OrqlNode, params: Params): string {
+    // if (this.sqlCaches.has(node)) return this.dialect.gen(this.sqlCaches.get(node)!);
     const root = node.item;
     const columns: SqlColumn[] = [];
-    const params: SqlParam[] = [];
+    const sqlParams: SqlParam[] = [];
     if (root.children == undefined) {
-      throw new Error(`add children not exist`);
+      throw new Error(`${root.name} children not exist`);
     }
-    const schema = this.schemaManager.getSchema(node.item.name);
+    const schema = this.schemaManager.getSchema(root.name);
     let hasAll = false;
     const ignores: string[] = [];
     for (const item of root.children) {
@@ -296,26 +297,38 @@ export default class OrqlToSql {
       } else if (schema.hasColumn(item.name)) {
         const column = schema.getColumn(item.name);
         columns.push(new SqlColumn(column.field));
-        params.push(new SqlParam(column.name));
+        if (column.options.initialValue) {
+          params[column.name] = (new Function(`return ${column.options.initialValue}`))();
+        } else if (column.options.defaultValue && params[column] == undefined) {
+          params[column.name] = (new Function(`return ${column.options.defaultValue}`))();
+        }
+        sqlParams.push(new SqlParam(column.name));
       } else if (schema.hasAssociation(item.name)) {
         const association = schema.getAssociation(item.name);
         switch (association.type) {
           case AssociationType.BelongsTo:
+            const refIdKey = `${association.name}.${association.ref.getIdColumn()!.name}`;
             columns.push(new SqlColumn(association.refKey));
-            params.push(new SqlParam(`${association.name}.${association.ref.getIdColumn()!.name}`));
+            sqlParams.push(new SqlParam(refIdKey));
             break;
         }
       }
     }
     if (hasAll) {
       for (const column of schema.columns) {
+        // 非外键而且不ignore
         if (!column.refKey && ignores.indexOf(column.name) < 0) {
           columns.push(new SqlColumn(column.field));
-          params.push(new SqlParam(column.name));
+          if (column.options.initialValue) {
+            params[column.name] = (new Function(`return ${column.options.initialValue}`))();
+          } else if (column.options.defaultValue && params[column] == undefined) {
+            params[column.name] = (new Function(`return ${column.options.defaultValue}`))();
+          }
+          sqlParams.push(new SqlParam(column.name));
         }
       }
     }
-    const insert = new SqlInsert(schema.table, columns, params);
+    const insert = new SqlInsert(schema.table, columns, sqlParams);
     this.sqlCaches.set(node, insert);
     return this.dialect.gen(insert);
   }

@@ -23,6 +23,8 @@ export interface ColumnOptions {
   refKey?: boolean;
   middle?: Schema;
   middleKey?: string;
+  defaultValue?: string;
+  initialValue?: string;
 }
 
 export class Column {

@@ -15,6 +15,14 @@ orqlExecutor.addSchema('user', {
   id: intPkAndGk(),
   name: DataType.String,
   password: DataType.String,
+  deleted: {
+    type: DataType.Boolean,
+    initialValue: 'false'
+  },
+  createAt: {
+    type: DataType.Date,
+    defaultValue: 'new Date()'
+  },
   role: belongsTo('role'),
   posts: hasMany('post', {refKey: 'authorId'}),
   info: hasOne('userInfo')

@@ -263,3 +263,28 @@ test('test nest exp', async () => {
     expect(result!.name).toBe('n1');
   });
 });
+
+test('test initialValue', async () => {
+  await exec(async session => {
+    const user: User = {name: 'n1', deleted: true};
+    const id = await session.add('add user: {name, deleted}', user);
+    const result = await session.buildQuery()
+      .orql('query user (id = $id) : {*}')
+      .param('id', id)
+      .queryOne<User>();
+    expect(result!.name).toBe('n1');
+    expect(result!.deleted).toBeFalsy();
+  });
+});
+
+test('test defaultValue', async () => {
+  await exec(async session => {
+    const user: User = {name: 'n1'};
+    const id = await session.add('add user: {name, createAt}', user);
+    const result = await session.buildQuery()
+      .orql('query user (id = $id) : {*}')
+      .param('id', id)
+      .queryOne<User>();
+    expect(result!.createAt).not.toBeNull();
+  });
+});

@@ -60,7 +60,8 @@ export default class Session {
   }
   async add(orql: string, params: Params = {}): Promise<any> {
     const node = this.parse(orql);
-    const sql = this.orqlToSql.toAdd(node);
+    const sql = this.orqlToSql.toAdd(node, params);
+    // 代理params 判断defaultValue和initialValue
     return this.connection.add(new NamedParamSql(sql, params));
   }
   async update(orql: string, params: Params = {}): Promise<number> {

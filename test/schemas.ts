@@ -2,6 +2,8 @@ export interface User {
   id?: number;
   name?: string;
   password?: string;
+  deleted?: boolean;
+  createAt?: Date;
   role?: Role;
   posts?: Post[];
   info?: UserInfo;
