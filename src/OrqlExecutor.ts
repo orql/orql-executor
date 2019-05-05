@@ -25,6 +25,9 @@ export default class OrqlExecutor {
   getSchema(name): Schema | undefined {
     return this.configuration.schemaManager.getSchema(name);
   }
+  removeSchema(name: string) {
+    this.configuration.schemaManager.removeSchema(name);
+  }
   async sync(type: 'create' | 'update' | 'drop') {
     const session = await this.newSession();
     const migration = this.configuration.migration!;

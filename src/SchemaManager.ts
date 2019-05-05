@@ -53,4 +53,7 @@ export default class SchemaManager {
     }
     return schema;
   }
+  removeSchema(name: string) {
+    this.schemas.delete(name);
+  }
 }

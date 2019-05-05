@@ -134,17 +134,17 @@ export = class MysqlMigration implements Migration {
     return {name: result.get('name'), nullable: result.get('nullable') == 'YES', type, length};
   }
   getDatabaseFKColumn(result: QueryResult): DatabaseFKColumn {
-    return {name: result.get('ref'), ref: result.get('ref'), refKey: result.get('refKey')};
+    return {name: result.get('name'), ref: result.get('ref'), refKey: result.get('refKey')};
   }
   shouldUpdateColumn(column: Column, databaseColumn: DatabaseColumn): boolean {
     let change = false;
     if (this.genColumnType(column, 'query') != databaseColumn.type) change = true;
-    if (column.length && column.length != databaseColumn.length) change = true;
+    if (column.length != undefined && column.length != databaseColumn.length) change = true;
     if (!column.primaryKey) {
-      // 不可空
-      if (column.required && !databaseColumn.nullable) change = true;
-      // 可空
-      if (!column.required && databaseColumn.nullable) change = true;
+      // 要求必须，但是可以为空，需要更改
+      if (column.required == true && databaseColumn.nullable == true) change = true;
+      // 不要求必须，但是不可以为空，需要更改
+      if (column.required == false && databaseColumn.nullable != true) change = true;
     }
     return change;
   }
