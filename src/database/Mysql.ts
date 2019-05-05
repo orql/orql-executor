@@ -21,8 +21,8 @@ class MysqlQueryResult implements QueryResult {
 class MysqlConnection implements Connection {
   private origin: mysql.Connection;
   constructor(options: ConnectionOptions) {
-    const {host, password, database, username} = options;
-    const mOptions = {host, user: username, password, database};
+    const {host, password, database, username, port} = options;
+    const mOptions = {host, user: username, password, database, port};
     this.origin = mysql.createConnection(mOptions);
     this.origin.connect(err => {
       if (err) console.error(err);

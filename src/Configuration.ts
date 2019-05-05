@@ -18,6 +18,7 @@ export interface ConnectionOptions {
   database?: string;
   username?: string;
   password?: string;
+  port?: number;
   path?: string;
 }
 
