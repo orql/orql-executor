@@ -6,7 +6,7 @@ import NamedParamSql, {Params} from './sql/NamedParamSql';
 import QueryBuilder from './QueryBuilder';
 import UpdateBuilder from './UpdateBuilder';
 import Schema from './Schema';
-import ResultMapper, {MapperResult, ResultRoot} from './mapper/ResultMapper';
+import ResultMapper from './mapper/ResultMapper';
 import OrqlResultMapper from './mapper/OrqlResultMapper';
 
 export default class Session {
@@ -46,9 +46,9 @@ export default class Session {
   async query(orql: string, params: Params, options: {offset?: number, limit?: number} = {}): Promise<any> {
     const node = this.parse(orql);
     const sql = this.orqlToSql.toQuery(node, {offset: options.offset, limit: options.limit});
-    const results = await this.connection.query(new NamedParamSql(sql, params));
+    const {results, fields} = await this.connection.query(new NamedParamSql(sql, params));
     // count
-    if (node.op == 'count') return results[0].get(0);
+    if (node.op == 'count') return results[0][fields[0]];
     const mapper = this.orqlResultMapper.toResult(node.item);
     const mapperResult = this.resultMapper.mappe(mapper, results);
     if (!node.item.isArray) {
@@ -74,9 +74,9 @@ export default class Session {
     const sql = this.orqlToSql.toDelete(node);
     return this.connection.delete(new NamedParamSql(sql, params));
   }
-  async nativeQuery(sql: string, params: Params = {}, mapper?: ResultRoot): Promise<QueryResult[] | MapperResult[]> {
-    const results = await this.connection.query(new NamedParamSql(sql, params));
-    return mapper ? this.resultMapper.mappe(mapper, results) : results;
+  async nativeQuery(sql: string, params: Params = {}): Promise<QueryResult> {
+    return await this.connection.query(new NamedParamSql(sql, params));
+    // return mapper ? this.resultMapper.mappe(mapper, results) : results;
   }
   async nativeUpdate(sql: string, params?: Params): Promise<number> {
     params = params || {};

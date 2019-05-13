@@ -114,27 +114,27 @@ export = class MysqlMigration implements Migration {
     }
   }
   async existsTable(session: Session, schema: Schema): Promise<boolean> {
-    const result = await session.nativeQuery(`show tables like '${schema.table}'`);
-    return result.length > 0 ? result[0].get(0) == schema.table : false;
+    const {results, fields} = await session.nativeQuery(`show tables like '${schema.table}'`);
+    return results.length > 0 ? results[0][fields[0]] == schema.table : false;
   }
   async queryAllColumn(session: Session, schema: Schema): Promise<DatabaseColumn[]> {
     const sql = `select column_name as name, is_nullable as nullable, column_type as type from information_schema.columns where table_schema = database() && table_name = '${schema.table}'`;
-    const results = await session.nativeQuery(sql) as QueryResult[];
+    const {results} = await session.nativeQuery(sql);
     return results.map(result => this.getDatabaseColumn(result));
   }
   async queryColumn(session: Session, schema: Schema, column: Column): Promise<DatabaseColumn | undefined> {
     const sql = `select column_name as name, is_nullable as nullable, column_type as type from information_schema.columns where table_schema = database() && table_name = '${schema.table}' && column_name = '${column.field}'`;
     // 查询字段
-    const results = await session.nativeQuery(sql) as QueryResult[];
+    const {results} = await session.nativeQuery(sql);
     if (results.length == 0) return;
     return this.getDatabaseColumn(results[0]);
   }
-  getDatabaseColumn(result: QueryResult): DatabaseColumn {
-    const [type, length] = this.getTypeAndLength(result.get('type'));
-    return {name: result.get('name'), nullable: result.get('nullable') == 'YES', type, length};
+  getDatabaseColumn(result: any): DatabaseColumn {
+    const [type, length] = this.getTypeAndLength(result['type']);
+    return {name: result.name, nullable: result.nullable == 'YES', type, length};
   }
-  getDatabaseFKColumn(result: QueryResult): DatabaseFKColumn {
-    return {name: result.get('name'), ref: result.get('ref'), refKey: result.get('refKey')};
+  getDatabaseFKColumn(result: any): DatabaseFKColumn {
+    return {name: result.name, ref: result.ref, refKey: result.refKey};
   }
   shouldUpdateColumn(column: Column, databaseColumn: DatabaseColumn): boolean {
     let change = false;
@@ -163,7 +163,7 @@ export = class MysqlMigration implements Migration {
   }
   async queryFKColumn(session: Session, schema: Schema, column: Column): Promise<DatabaseFKColumn | undefined> {
     const sql = `select column_name as name, referenced_table_name as ref, referenced_column_name as refKey from information_schema.key_column_usage where constraint_schema = database() && table_name = '${schema.table}' && constraint_name <> 'PRIMARY' && column_name = '${column.field}'`;
-    const results = await session.nativeQuery(sql) as QueryResult[];
+    const {results} = await session.nativeQuery(sql);
     if (results.length == 0) return;
     return this.getDatabaseFKColumn(results[0]);
   }
@@ -173,7 +173,7 @@ export = class MysqlMigration implements Migration {
   }
   async queryAllFKColumn(session: Session, schema: Schema): Promise<DatabaseFKColumn[]> {
     const sql = `select column_name as name, referenced_table_name as ref, referenced_column_name as refKey from information_schema.key_column_usage where constraint_schema = database() && table_name = '${schema.table}' && constraint_name <> 'PRIMARY'`;
-    const results = await session.nativeQuery(sql) as QueryResult[];
+    const {results} = await session.nativeQuery(sql);
     return results.map(result => this.getDatabaseFKColumn(result));
   }
 }

@@ -1,12 +1,14 @@
-import NamedParamSql, {Params} from '../sql/NamedParamSql';
+import NamedParamSql from '../sql/NamedParamSql';
 import {ConnectionOptions} from '../Configuration';
 
 export interface QueryResult {
-  get(i: number | string): any;
+  // result.id result.name
+  results: any[];
+  fields: string[];
 }
 
 export interface Connection {
-  query(namedParamSql: NamedParamSql): Promise<Array<QueryResult>>;
+  query(namedParamSql: NamedParamSql): Promise<QueryResult>;
   add(namedParamSql: NamedParamSql): Promise<any>;
   update(namedParamSql: NamedParamSql): Promise<number>;
   delete(namedParamSql: NamedParamSql): Promise<number>;

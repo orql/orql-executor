@@ -1,22 +1,22 @@
-import mysql, {FieldInfo} from 'mysql';
-import {QueryResult, Connection} from './Database';
+import mysql from 'mysql';
+import {Connection, QueryResult} from './Database';
 import Database from './Database';
 import NamedParamSql, {Params} from '../sql/NamedParamSql';
 import {ConnectionOptions} from '../Configuration';
 
-class MysqlQueryResult implements QueryResult {
-  private result: any[];
-  private fields?: FieldInfo[];
-  constructor(result: Array<any>, fields?: FieldInfo[]) {
-    this.result = result;
-    this.fields = fields;
-  }
-  get(i: number | string): any {
-    if (typeof i == 'string') return this.result[i];
-    const name = this.fields![i].name;
-    return this.result[name];
-  }
-}
+// class MysqlQueryResult implements QueryResult {
+//   private result: any[];
+//   private fields?: FieldInfo[];
+//   constructor(result: Array<any>, fields?: FieldInfo[]) {
+//     this.result = result;
+//     this.fields = fields;
+//   }
+//   get(i: number | string): any {
+//     if (typeof i == 'string') return this.result[i];
+//     const name = this.fields![i].name;
+//     return this.result[name];
+//   }
+// }
 
 class MysqlConnection implements Connection {
   private origin: mysql.Connection;
@@ -28,16 +28,23 @@ class MysqlConnection implements Connection {
       if (err) console.error(err);
     });
   }
-  async query(namedParamSql: NamedParamSql): Promise<Array<QueryResult>> {
-    return new Promise<Array<QueryResult>>((resolve, reject) => {
+  async query(namedParamSql: NamedParamSql): Promise<QueryResult> {
+    return new Promise<QueryResult>((resolve, reject) => {
       console.log(namedParamSql.toString());
       this.origin.query(namedParamSql.sql, namedParamSql.getParamArray(), (error, results, fields) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        const array = results.map(result => new MysqlQueryResult(result, fields));
-        resolve(array);
+        if (error) return reject(error);
+        const _fields = fields != undefined ? fields.map(info => info.name) : [];
+        const _results = results.map(result => {
+          const obj = {};
+          for (const field of _fields) {
+            obj[field] = result[field];
+          }
+          return obj;
+        });
+        resolve({
+          results: _results,
+          fields: _fields
+        });
       });
     });
   }
@@ -45,10 +52,7 @@ class MysqlConnection implements Connection {
     return new Promise<any>((resolve, reject) => {
       console.log(namedParamSql.toString());
       this.origin.query(namedParamSql.sql, namedParamSql.getParamArray(), (error, results, fields) => {
-        if (error) {
-          reject(error);
-          return;
-        }
+        if (error) return reject(error);
         resolve(results.insertId);
       });
     });
@@ -57,10 +61,7 @@ class MysqlConnection implements Connection {
     return new Promise<number>((resolve, reject) => {
       console.log(namedParamSql.toString());
       this.origin.query(namedParamSql.sql, namedParamSql.getParamArray(), (error, results, fields) => {
-        if (error) {
-          reject(error);
-          return;
-        }
+        if (error) return reject(error);
         resolve(results.affectedRows);
       });
     });
@@ -69,9 +70,9 @@ class MysqlConnection implements Connection {
     return await this.update(namedParamSql);
   }
   beginTransaction(): Promise<void> {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       this.origin.beginTransaction(err => {
-        if (err) throw err;
+        if (err) return reject(err);
         resolve();
       });
     });
@@ -89,7 +90,7 @@ class MysqlConnection implements Connection {
       this.origin.commit(err => {
         if (err) {
           this.origin.rollback(err => {
-            if (err) throw err;
+            if (err) return reject(err);
             resolve();
           });
         }
@@ -97,9 +98,9 @@ class MysqlConnection implements Connection {
     });
   }
   rollback(): Promise<void> {
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve, reject) => {
       this.origin.rollback(err => {
-        if (err) throw err;
+        if (err) return reject(err);
         resolve();
       });
     });

@@ -1,5 +1,4 @@
 import {DataType} from '../Schema';
-import {QueryResult} from '../database/Database';
 
 export class ResultRoot {
   readonly id: ResultId;
@@ -55,30 +54,28 @@ export class ResultArray extends ResultRef {
 
 }
 
-export type MapperResult = {[name: string]: any};
-
 // query results mapper
 export default class ResultMapper {
-  mappe(resultRoot: ResultRoot, results: Array<QueryResult>): MapperResult[] {
-    const data: MapperResult[] = [];
+  mappe(resultRoot: ResultRoot, results: any[]): any[] {
+    const data: any[] = [];
     const resultId = resultRoot.id;
-    // 按id切割, {id: Array<MapperResult>}
-    const idListMap = new Map<object, Array<QueryResult>>();
+    // 按id切割, {id: {}[]}
+    const idListMap = new Map<object, any[]>();
     for (const result of results) {
-      const idValue = result.get(resultId.field);
+      const idValue = result[resultId.field];
       // 避免undefined列被映射
       if (idValue == undefined) continue;
       if (! idListMap.has(idValue)) idListMap.set(idValue, []);
       idListMap.get(idValue)!.push(result);
     }
     for (const [idValue, idResults] of idListMap) {
-      const childData: MapperResult = {};
+      const childData: any = {};
       // 从第一列获取数据
       const idResult = idResults[0];
       childData[resultId.column] = idValue;
       for (const resultItem of resultRoot.columns) {
         if (resultItem instanceof ResultColumn) {
-          childData[resultItem.column] = idResult.get(resultItem.field);
+          childData[resultItem.column] = idResult[resultItem.field];
         } else if (resultItem instanceof ResultRef) {
           const nestRecord = this.mappe(resultItem.root, idResults);
           if (resultItem instanceof ResultObject) {

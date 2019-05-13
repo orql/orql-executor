@@ -5,17 +5,17 @@ import NamedParamSql from '../sql/NamedParamSql';
 
 sqlite3.verbose();
 
-class Sqlite3QueryResult implements QueryResult {
-  private row: any;
-  constructor(row: any) {
-    this.row = row;
-  }
-  get(i: number | string): object {
-    if (typeof i == 'string') return this.row[i];
-    const name = Object.keys(this.row)[i];
-    return this.row[name];
-  }
-}
+// class Sqlite3QueryResult implements QueryResult {
+//   private row: any;
+//   constructor(row: any) {
+//     this.row = row;
+//   }
+//   get(i: number | string): object {
+//     if (typeof i == 'string') return this.row[i];
+//     const name = Object.keys(this.row)[i];
+//     return this.row[name];
+//   }
+// }
 
 class Sqlite3Connection implements Connection {
   private db: sqlite3.Database;
@@ -76,16 +76,23 @@ class Sqlite3Connection implements Connection {
     return await this.update(namedParamSql);
   }
 
-  async query(namedParamSql: NamedParamSql): Promise<Array<QueryResult>> {
+  async query(namedParamSql: NamedParamSql): Promise<QueryResult> {
     console.log(namedParamSql.toString());
-    return new Promise<Array<QueryResult>>((resolve, reject) => {
+    return new Promise<QueryResult>((resolve, reject) => {
       this.db.all(namedParamSql.sql, namedParamSql.getParamArray(), ((err, rows) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        const results = rows.map(row => new Sqlite3QueryResult(row));
-        resolve(results);
+        if (err) return reject(err);
+        const fields = rows.length > 0 ? Object.keys(rows[0]) : [];
+        const results = rows.map(row => {
+          const obj = {};
+          for (const field of fields) {
+            obj[field] = row[field];
+          }
+          return obj;
+        });
+        resolve({
+          fields,
+          results
+        });
       }));
     });
   }
