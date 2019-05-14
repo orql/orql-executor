@@ -9,3 +9,5 @@ src
 jest.config.js
 tsconfig.json
 docs
+
+.DS_Store

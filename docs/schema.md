@@ -60,8 +60,13 @@ id: {type: DataType.Long, primaryKey: true, generatedKey: true}
 id: longPkAndGk()
 ```
 
-## column data Type
+## column options
 
+### field
+数据库表中的字段名称,默认为column名
+
+### type
+数据类型
 * string: DataType.String // 字符串
 * int: DataType.Int // int
 * float: DataType.Float // float
@@ -70,15 +75,36 @@ id: longPkAndGk()
 * enum: DataType.Enum // 枚举
 * bool: DataType.Boolean // bool值
 
-## column options
+### length
+字段长度，默认为空
 
-* field: 数据库field,默认为name
-* type: 数据类型
-* length: 长度
-* required: 非空,默认为false
-* primaryKey: 主键
-* generatedKey: 自增
-* pkAndGk: 自增主键
+### required
+非空要求，默认为false。
+### primaryKey
+数据库主键
+
+### generatedKey
+自增键
+
+### pkAndGk
+自增主键
+
+### defaultValue
+默认值，如插入该字段但参数为空，则使用该值，值为js的字面量。
+
+默认值为false
+
+```ts
+{isDelete: false}
+```
+默认值为当前时间
+
+```ts
+{createAt: 'new Date()'}
+```
+
+### initialValue
+初始化值，如插入该字段，则自动覆盖参数值，值与defaultValue一致。
 
 # 关联
 
@@ -203,16 +229,26 @@ orqlExecutor.addSchema('postTag', {
 
 关联关系配置 association options
 
-* refName: 关联schema名
-* type: AssociationType
-* refKey: 关联键会自动默认设置
-* required: 是否必须
-* middleName: 多对多关联中间schema名,在多对多种必选
-* middleKey: 中间schema连接ref的关联键
+### refName
+关联schema名
 
+### type
 关联类型AssociationType
 
 * AssociationType.BelongsTo 
 * AssociationType.HasOne 
 * AssociationType.HasMany 
 * AssociationType.BelongsToMany
+
+
+### refKey
+关联键会自动默认设置
+
+### required
+是否必须，默认为true
+
+### middleName
+多对多关联中间schema名,在多对多中必选
+
+### middleKey
+中间schema连接ref的关联键

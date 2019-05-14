@@ -101,6 +101,18 @@ console.log(user.name); //console n2
 session.buildUpdate().delete('user', user);
 ```
 
+## native build
+
+```ts
+session.buildNative()
+  .sql(sql)  // sql
+  .param(key, value)  // 参数，在sql中为#name
+  .params({[key: string]: any})  // 所有参数
+  .queryAll()  //查询全部
+  .queryOne()  //查询单条
+  .update()  //修改
+```
+
 # mapper
 可以使用mapper对复杂native sql查询的结果进行数据映射.
 
@@ -146,8 +158,10 @@ mapper array对应映射对象的关联数组,如`user -> posts`需要用array�
 
 ## mapper使用
 
+native查询使用mapper
+
 ```ts
-session.nativeQuery(sql, params, mapper);
+session.buildNative.(sql).mapper(mapper);
 ```
 
 user mapper
@@ -167,5 +181,8 @@ const userMapper = Mapper.create([
 获取user和其关联role
 
 ```ts
-const users = await session.nativeQuery('select user.id as id, user.name as name, user.password as password, role.id as roleId, role.name as roleName from user inner join role', {}, userMapper) as User[];
+const users = await session.buildNative()
+  .sql('select user.id as id, user.name as name, user.password as password, role.id as roleId, role.name as roleName from user inner join role')
+  .mapper(userMapper)
+  .queryAll() as User[];
 ```
