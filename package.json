@@ -1,6 +1,6 @@
 {
   "name": "orql-executor",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "orql executor",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

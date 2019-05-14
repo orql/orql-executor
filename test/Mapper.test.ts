@@ -30,7 +30,10 @@ test('test query mapper', async () => {
     const role: Role = {name: 'r1'};
     await session.buildUpdate().add('role', role);
     await session.buildUpdate().add('user', {name: 'n1', role: {id: role.id}});
-    const users = await session.nativeQuery('select user.id as id, user.name as name, user.password as password, role.id as roleId, role.name as roleName from user inner join role', {}, userMapper) as User[];
+    const users = await session.buildNative()
+      .sql('select user.id as id, user.name as name, user.password as password, role.id as roleId, role.name as roleName from user inner join role')
+      .mapper(userMapper)
+      .queryAll() as User[];
     expect(users[0].name).toBe('n1');
     expect(users[0].role!.name).toBe('r1');
   });

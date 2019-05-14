@@ -278,7 +278,7 @@ export default class OrqlToSql {
     }
   }
 
-  toAdd(node: OrqlNode, params: Params): string {
+  toAdd(node: OrqlNode, params?: Params): string {
     // if (this.sqlCaches.has(node)) return this.dialect.gen(this.sqlCaches.get(node)!);
     const root = node.item;
     const columns: SqlColumn[] = [];
@@ -297,9 +297,9 @@ export default class OrqlToSql {
       } else if (schema.hasColumn(item.name)) {
         const column = schema.getColumn(item.name);
         columns.push(new SqlColumn(column.field));
-        if (column.options.initialValue) {
+        if (column.options.initialValue && params) {
           params[column.name] = (new Function(`return ${column.options.initialValue}`))();
-        } else if (column.options.defaultValue && params[column] == undefined) {
+        } else if (column.options.defaultValue && params && params[column] == undefined) {
           params[column.name] = (new Function(`return ${column.options.defaultValue}`))();
         }
         sqlParams.push(new SqlParam(column.name));
@@ -319,9 +319,9 @@ export default class OrqlToSql {
         // 非外键而且不ignore
         if (!column.refKey && ignores.indexOf(column.name) < 0) {
           columns.push(new SqlColumn(column.field));
-          if (column.options.initialValue) {
+          if (column.options.initialValue && params) {
             params[column.name] = (new Function(`return ${column.options.initialValue}`))();
-          } else if (column.options.defaultValue && params[column] == undefined) {
+          } else if (column.options.defaultValue && params && params[column] == undefined) {
             params[column.name] = (new Function(`return ${column.options.defaultValue}`))();
           }
           sqlParams.push(new SqlParam(column.name));

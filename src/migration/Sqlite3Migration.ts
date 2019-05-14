@@ -1,7 +1,6 @@
 import Migration, {DatabaseColumn} from './Migration';
 import Session from '../Session';
 import Schema, {Column} from '../Schema';
-import {QueryResult} from '../database/Database';
 
 export = class Sqlite3Migration implements Migration {
   async create(session: Session): Promise<void> {
@@ -55,8 +54,8 @@ export = class Sqlite3Migration implements Migration {
       if (!exist) {
         await this.createTable(session, schema);
       } else {
-        const fields = await session.nativeQuery(`pragma table_info('${schema.table}')`) as QueryResult[];
-        const fieldNames = fields.map(field => field.get('name'));
+        const {results} = await session.nativeQuery(`pragma table_info('${schema.table}')`);
+        const fieldNames = results.map(field => field.name);
         for (const column of schema.columns) {
           const index = fieldNames.indexOf(column.field);
           if (index < 0) {

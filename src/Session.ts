@@ -8,13 +8,14 @@ import UpdateBuilder from './UpdateBuilder';
 import Schema from './Schema';
 import ResultMapper from './mapper/ResultMapper';
 import OrqlResultMapper from './mapper/OrqlResultMapper';
+import NativeBuilder from './NativeBuilder';
 
 export default class Session {
   readonly configuration: Configuration;
   readonly schemaManager: SchemaManager;
   private orqlToSql: OrqlToSql;
   private connection: Connection;
-  private resultMapper: ResultMapper;
+  readonly resultMapper: ResultMapper;
   private orqlResultMapper: OrqlResultMapper;
   // private parser: Parser;
   constructor(configuration: Configuration, connection: Connection) {
@@ -87,5 +88,8 @@ export default class Session {
   }
   buildUpdate(): UpdateBuilder {
     return new UpdateBuilder(this);
+  }
+  buildNative(): NativeBuilder {
+    return new NativeBuilder(this);
   }
 }

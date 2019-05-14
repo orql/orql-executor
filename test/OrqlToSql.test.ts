@@ -2,6 +2,7 @@ import orqlExecutor from './orqlExecutor';
 import OrqlToSql from '../src/sql/OrqlToSql';
 import MysqlDialect from '../src/dialect/MysqlDialect';
 import Parser from 'orql-parser';
+import {Params} from '../src/sql/NamedParamSql';
 
 const orqlToSql = new OrqlToSql(orqlExecutor.configuration.schemaManager, new MysqlDialect());
 
@@ -10,9 +11,9 @@ function toQuerySql(orql: string, options: {offset?: number, limit?: number} = {
   return orqlToSql.toQuery(node, options);
 }
 
-function toAddSql(orql: string): string {
+function toAddSql(orql: string, params?: Params): string {
   const node = Parser.parse(orql);
-  return orqlToSql.toAdd(node);
+  return orqlToSql.toAdd(node, params);
 }
 
 function toUpdate(orql: string): string {
