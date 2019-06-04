@@ -37,12 +37,12 @@ export default class Mapper {
     const columns: ResultItem[] = [];
     for (const options of children) {
       if (typeof options == 'string') {
-        columns.push(new ResultColumn(options, DataType.Never));
+        columns.push(new ResultColumn(options));
       } else {
         if (options.id) {
-          resultId = new ResultId(options.name!, options.type || DataType.Never, options.field);
+          resultId = new ResultId(options.name!, options.type, options.field);
         } else if (options.column) {
-          columns.push(new ResultColumn(options.name!, options.type || DataType.Never, options.field));
+          columns.push(new ResultColumn(options.name!, options.type, options.field));
         } else if (options.object) {
           columns.push(new ResultObject(options.name!, Mapper.create(options.children!)));
         } else if (options.array) {

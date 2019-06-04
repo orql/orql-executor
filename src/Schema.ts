@@ -189,10 +189,8 @@ export default class Schema {
   readonly name: string;
   private idColumn?: Column;
   readonly columns: Column[] = [];
-  readonly columnNames: string[] = [];
   readonly options: SchemaOptions;
   private associations: Association[] = [];
-  private associationNames: string[] = [];
   private schemaManager: SchemaManager;
   constructor(schemaManager: SchemaManager, name: string, options: SchemaOptions = {}) {
     this.schemaManager = schemaManager;
@@ -205,34 +203,30 @@ export default class Schema {
   addColumn(name: string, options: ColumnOptions): Schema {
     const column = new Column(this.schemaManager, name, options);
     if (column.primaryKey) this.idColumn = column;
-    this.columnNames.push(column.name);
     this.columns.push(column);
     return this;
   }
   hasColumn(name: string): boolean {
-    return this.columnNames.indexOf(name) >= 0;
+    return this.columns.findIndex(column => column.name == name) >= 0;
   }
   hasAssociation(name: string): boolean {
-    return this.associationNames.indexOf(name) >= 0;
+    return this.associations.findIndex(association => association.name == name) >= 0;
   }
   getColumn(name: string): Column | undefined {
-    const index = this.columnNames.indexOf(name);
-    return this.columns[index];
+    return this.columns.find(column => column.name == name);
   }
   getIdColumn(): Column | undefined {
     return this.idColumn;
   }
   getAssociation(name: string): Association | undefined {
-    const index = this.associationNames.indexOf(name);
-    return this.associations[index];
+    return this.associations.find(association => association.name == name);
   }
   private addRefColumn(name: string, type: DataType, length: number | undefined, refName: string) {
-    if (this.columnNames.indexOf(name) >= 0) return;
+    if (this.hasColumn(name)) return;
     this.addColumn(name, {type, refKey: true, refName, length});
   }
   addAssociation(name: string, options: AssociationOptions): Schema {
     const association = new Association(this.schemaManager, name, this, options);
-    this.associationNames.push(association.name);
     this.associations.push(association);
     switch (association.type) {
       case AssociationType.HasOne:

@@ -21,8 +21,8 @@ export class ResultItem {
 export class ResultColumn extends ResultItem {
   // 数据库列
   readonly field: string;
-  readonly type: DataType;
-  constructor(column: string, type: DataType, field: string = column) {
+  readonly type?: DataType;
+  constructor(column: string, type?: DataType, field: string = column) {
     super(column);
     this.field = field;
     this.type = type;
