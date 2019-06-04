@@ -40,7 +40,7 @@ export interface ColumnOptions {
 
 export class Column {
   // 列名
-  readonly name: string;
+  name: string;
   readonly schemaManager: SchemaManager;
   readonly options: ColumnOptions;
   constructor(schemaManager: SchemaManager, name: string, options: ColumnOptions) {
@@ -119,7 +119,7 @@ export interface AssociationOptions {
 
 export class Association {
   private schemaManager: SchemaManager;
-  readonly name: string;
+  name: string;
   readonly current: Schema;
   readonly options: AssociationOptions;
   constructor(schemaManager: SchemaManager, name: string, current:Schema, options: AssociationOptions) {
@@ -200,31 +200,93 @@ export default class Schema {
   get table(): string {
     return this.options.table || this.name;
   }
+
+  /**
+   * 添加column
+   * @param name
+   * @param options
+   */
   addColumn(name: string, options: ColumnOptions): Schema {
     const column = new Column(this.schemaManager, name, options);
     if (column.primaryKey) this.idColumn = column;
     this.columns.push(column);
     return this;
   }
+
+  /**
+   * 删除column
+   * @param name
+   */
+  deleteColumn(name: string) {
+    const index = this.columns.findIndex(column => column.name == name);
+    if (index >= 0) this.columns.splice(index, 1);
+  }
+
+  /**
+   * 判断是否有column
+   * @param name
+   */
   hasColumn(name: string): boolean {
     return this.columns.findIndex(column => column.name == name) >= 0;
   }
+
+  /**
+   * 判断是否有association
+   * @param name
+   */
   hasAssociation(name: string): boolean {
     return this.associations.findIndex(association => association.name == name) >= 0;
   }
+
+  /**
+   * 删除association
+   * @param name
+   */
+  deleteAssociation(name: string) {
+    const index = this.associations.findIndex(association => association.name == name);
+    if (index >= 0) this.associations.splice(index, 1);
+  }
+
+  /**
+   * 获取column
+   * @param name
+   */
   getColumn(name: string): Column | undefined {
     return this.columns.find(column => column.name == name);
   }
+
+  /**
+   * 获取主键
+   */
   getIdColumn(): Column | undefined {
     return this.idColumn;
   }
+
+  /**
+   * 获取association
+   * @param name
+   */
   getAssociation(name: string): Association | undefined {
     return this.associations.find(association => association.name == name);
   }
+
+  /**
+   * 添加关联column
+   * @param name
+   * @param type
+   * @param length
+   * @param refName
+   */
   private addRefColumn(name: string, type: DataType, length: number | undefined, refName: string) {
     if (this.hasColumn(name)) return;
     this.addColumn(name, {type, refKey: true, refName, length});
   }
+
+  /**
+   * 添加association
+   * @param name
+   * @param options
+   */
   addAssociation(name: string, options: AssociationOptions): Schema {
     const association = new Association(this.schemaManager, name, this, options);
     this.associations.push(association);
