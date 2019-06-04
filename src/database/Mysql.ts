@@ -4,28 +4,21 @@ import Database from './Database';
 import NamedParamSql, {Params} from '../sql/NamedParamSql';
 import {ConnectionOptions} from '../Configuration';
 
-// class MysqlQueryResult implements QueryResult {
-//   private result: any[];
-//   private fields?: FieldInfo[];
-//   constructor(result: Array<any>, fields?: FieldInfo[]) {
-//     this.result = result;
-//     this.fields = fields;
-//   }
-//   get(i: number | string): any {
-//     if (typeof i == 'string') return this.result[i];
-//     const name = this.fields![i].name;
-//     return this.result[name];
-//   }
-// }
-
 class MysqlConnection implements Connection {
+  private options: ConnectionOptions;
   private origin: mysql.Connection;
   constructor(options: ConnectionOptions) {
-    const {host, password, database, username, port} = options;
+    this.options = options;
+    const {host, password, database, username, port} = this.options;
     const mOptions = {host, user: username, password, database, port};
     this.origin = mysql.createConnection(mOptions);
-    this.origin.connect(err => {
-      if (err) console.error(err);
+  }
+  async connect(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.origin.connect(err => {
+        if (err) return reject(err);
+        resolve();
+      });
     });
   }
   async query(namedParamSql: NamedParamSql): Promise<QueryResult> {
@@ -88,12 +81,11 @@ class MysqlConnection implements Connection {
   commit(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.origin.commit(err => {
-        if (err) {
-          this.origin.rollback(err => {
-            if (err) return reject(err);
-            resolve();
-          });
-        }
+        if (!err) return resolve();
+        this.origin.rollback(err => {
+          if (err) return reject(err);
+          resolve();
+        });
       });
     });
   }
@@ -109,6 +101,8 @@ class MysqlConnection implements Connection {
 
 export = class MysqlDriver implements Database {
   async getConnect(options: ConnectionOptions): Promise<Connection> {
-    return new MysqlConnection(options);
+    const connect = new MysqlConnection(options);
+    await connect.connect();
+    return connect;
   }
 }

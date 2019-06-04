@@ -5,18 +5,6 @@ import NamedParamSql from '../sql/NamedParamSql';
 
 sqlite3.verbose();
 
-// class Sqlite3QueryResult implements QueryResult {
-//   private row: any;
-//   constructor(row: any) {
-//     this.row = row;
-//   }
-//   get(i: number | string): object {
-//     if (typeof i == 'string') return this.row[i];
-//     const name = Object.keys(this.row)[i];
-//     return this.row[name];
-//   }
-// }
-
 class Sqlite3Connection implements Connection {
   private db: sqlite3.Database;
   constructor(options: ConnectionOptions) {
@@ -108,7 +96,6 @@ class Sqlite3Connection implements Connection {
       });
     });
   }
-
   update(namedParamSql: NamedParamSql): Promise<number> {
     console.log(namedParamSql.toString());
     return new Promise<number>((resolve, reject) => {
@@ -121,7 +108,6 @@ class Sqlite3Connection implements Connection {
       });
     });
   }
-
 }
 
 export = class Sqlite3 implements Database {

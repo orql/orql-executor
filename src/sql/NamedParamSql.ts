@@ -14,7 +14,7 @@ export type Params = {[name: string]: any}
  */
 export default class NamedParamSql {
 
-  private params;
+  private params: Params;
 
   readonly sql: string;
 
@@ -26,8 +26,12 @@ export default class NamedParamSql {
   // id key type
   idType?: DataType;
 
-  constructor(sql: string, params: Params) {
-    this.params = params;
+  static create(sql: string, params?: Params) {
+    return new NamedParamSql(sql, params);
+  }
+
+  constructor(sql: string, params?: Params) {
+    this.params = params || {};
     this.paramNames = [];
     let status = MatchStatus.State;
     let sqlTmp = '';
