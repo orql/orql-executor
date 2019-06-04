@@ -56,4 +56,11 @@ export default class SchemaManager {
   removeSchema(name: string) {
     this.schemas.delete(name);
   }
+  toJSON() {
+    const array: Schema[] = [];
+    for (const v of this.schemas.values()) {
+      array.push(v)
+    }
+    return array;
+  }
 }

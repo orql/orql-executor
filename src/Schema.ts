@@ -81,6 +81,12 @@ export class Column {
         return undefined;
     }
   }
+  toJSON() {
+    return {
+      name: this.name,
+      ...this.options
+    }
+  }
 }
 
 export enum AssociationType {
@@ -165,6 +171,12 @@ export class Association {
         return `${current.name}Id`;
     }
   }
+  toJSON() {
+    return {
+      name: this.name,
+      ...this.options
+    }
+  }
 }
 
 export interface SchemaOptions {
@@ -236,5 +248,13 @@ export default class Schema {
         break;
     }
     return this;
+  }
+  toJSON() {
+    return {
+      name: this.name,
+      table: this.options.table,
+      columns: this.columns,
+      associations: this.associations
+    }
   }
 }
