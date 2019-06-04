@@ -3,31 +3,43 @@ import SchemaManager from './SchemaManager';
 export enum DataType {
   Int = 'int',
   Float = 'float',
+  Double = 'double',
   Long = 'long',
   String = 'string',
   Boolean = 'bool',
   Date = 'date',
-  Enum = 'enum',
-  Never = 'never'
+  Enum = 'enum'
 }
 
 export interface ColumnOptions {
+  // 类型
   type?: DataType;
+  // 长度
   length?: number;
+  // 字段
   field?: string;
+  // 非空
   required?: boolean;
-  pkAndGk?: boolean;
+  // 主键
   primaryKey?: boolean;
+  // 自增
   generatedKey?: boolean;
+  // 关联schema名
   refName?: string;
+  // 关联键
   refKey?: boolean;
+  // 中间schema
   middle?: Schema;
+  // 中间键名
   middleKey?: string;
+  // 默认值
   defaultValue?: string;
+  // 初始值
   initialValue?: string;
 }
 
 export class Column {
+  // 列名
   readonly name: string;
   readonly schemaManager: SchemaManager;
   readonly options: ColumnOptions;
@@ -37,10 +49,10 @@ export class Column {
     this.options = options;
   }
   get primaryKey(): boolean {
-    return this.options.pkAndGk || this.options.primaryKey || false;
+    return this.options.primaryKey || false;
   }
   get generatedKey(): boolean {
-    return this.options.pkAndGk || this.options.generatedKey || false;
+    return this.options.generatedKey || false;
   }
   get ref(): Schema | undefined {
     return this.schemaManager.getSchema(this.options.refName!);
@@ -60,6 +72,7 @@ export class Column {
   get required(): boolean {
     return this.options.required || false;
   }
+  // 获取默认长度
   private static getDefaultLength(type: DataType): number | undefined {
     switch (type) {
       case DataType.String:
@@ -71,9 +84,13 @@ export class Column {
 }
 
 export enum AssociationType {
+  // 属于
   BelongsTo = 'belongsTo',
+  // 拥有一个
   HasOne = 'hasOne',
+  // 拥有多个
   HasMany = 'hasMany',
+  // 属于多个
   BelongsToMany = 'belongsToMany'
 }
 
@@ -151,10 +168,12 @@ export class Association {
 }
 
 export interface SchemaOptions {
+  // 表名
   table?: string;
 }
 
 export default class Schema {
+  // schema名
   readonly name: string;
   private idColumn?: Column;
   readonly columns: Column[] = [];

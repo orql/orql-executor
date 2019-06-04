@@ -1,12 +1,12 @@
-import {AssociationOptions, AssociationType, DataType} from './Schema';
+import {AssociationOptions, AssociationType, ColumnOptions, DataType} from './Schema';
 import OrqlExecutor from './OrqlExecutor';
 
-export function intPkAndGk() {
-  return {type: DataType.Int, pkAndGk: true};
+export function intPkAndGk(): ColumnOptions {
+  return {type: DataType.Int, primaryKey: true, generatedKey: true};
 }
 
-export function longPkAndGk() {
-  return {type: DataType.Long, pkAndGk: true}
+export function longPkAndGk(): ColumnOptions {
+  return {type: DataType.Long, primaryKey: true, generatedKey: true}
 }
 
 export function belongsTo(refName: string, options?: AssociationOptions): AssociationOptions {
