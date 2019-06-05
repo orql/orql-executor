@@ -91,7 +91,8 @@ export default interface Migration {
    * @param session
    * @param schema
    * @param column
+   * @param oldField
    */
-  updateColumn(session: Session, schema: Schema, column: Column): Promise<void>;
+  updateColumn(session: Session, schema: Schema, column: Column, oldField?: string): Promise<void>;
 
 }

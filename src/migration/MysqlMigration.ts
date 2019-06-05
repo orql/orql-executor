@@ -36,8 +36,8 @@ export = class MysqlMigration implements Migration {
     const sql = `alter table ${schema.table} add ${this.genCreateColumn(column)}`;
     await session.nativeUpdate(sql);
   }
-  async updateColumn(session: Session, schema: Schema, column: Column) {
-    const sql = `alter table ${schema.table} change ${column.field} ${this.genCreateColumn(column)}`;
+  async updateColumn(session: Session, schema: Schema, column: Column, oldField?: string) {
+    const sql = `alter table ${schema.table} change ${oldField || column.field} ${this.genCreateColumn(column)}`;
     await session.nativeUpdate(sql);
   }
   private genFK(schema: Schema, column: Column) {

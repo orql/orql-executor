@@ -89,7 +89,7 @@ export = class Sqlite3Migration implements Migration {
     return false;
   }
 
-  async updateColumn(session: Session, schema: Schema, column: Column) {
+  async updateColumn(session: Session, schema: Schema, column: Column, oldField?: string) {
     return undefined;
   }
 }

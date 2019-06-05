@@ -201,15 +201,32 @@ export default class Schema {
     return this.options.table || this.name;
   }
 
+  private createColumn(name: string, options: ColumnOptions): Column {
+    const column = new Column(this.schemaManager, name, options);
+    if (column.primaryKey) this.idColumn = column;
+    return column;
+  }
+
   /**
    * 添加column
    * @param name
    * @param options
    */
   addColumn(name: string, options: ColumnOptions): Schema {
-    const column = new Column(this.schemaManager, name, options);
-    if (column.primaryKey) this.idColumn = column;
+    const column = this.createColumn(name, options);
     this.columns.push(column);
+    return this;
+  }
+
+  /**
+   * 修改column
+   * @param oldName
+   * @param newName
+   * @param options
+   */
+  updateColumn(oldName: string, newName: string, options: ColumnOptions): Schema {
+    const index = this.columns.findIndex(column => column.name == oldName);
+    this.columns[index] = this.createColumn(newName, options);
     return this;
   }
 
