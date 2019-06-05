@@ -94,7 +94,7 @@ export = class MysqlMigration implements Migration {
         await this.addColumn(session, schema, column);
       }
     }
-    for (const [name, schema] of schemas) {
+    for (const schema of schemas) {
       // 修改外键
       await this.updateFks(session, schema);
     }

@@ -186,7 +186,7 @@ export interface SchemaOptions {
 
 export default class Schema {
   // schema名
-  readonly name: string;
+  name: string;
   private idColumn?: Column;
   readonly columns: Column[] = [];
   readonly options: SchemaOptions;

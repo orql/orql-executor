@@ -9,24 +9,24 @@ interface AddAssociation {
 }
 
 export default class SchemaManager {
-  readonly schemas = new Map<string, Schema>();
+  readonly schemas: Schema[] = [];
   private addAssociationMap = new Map<string, AddAssociation[]>();
   getSchema(name: string): Schema | undefined {
-    return this.schemas.get(name);
+    return this.schemas.find(schema => schema.name == name);
   }
   hasSchema(name: string): boolean {
-    return this.schemas.has(name);
+    return this.schemas.find(schema => schema.name == name) != undefined;
   }
   addSchema(name: string, columns: Columns, options?: SchemaOptions): Schema {
     const schema = new Schema(this, name, options);
-    this.schemas.set(name, schema);
+    this.schemas.push(schema);
     for (const key of Object.keys(columns)) {
       const options = columns[key];
       if (typeof options == 'string') {
         // data type
         schema.addColumn(key, {type: options});
       } else if ('refName' in options) {
-        if (this.schemas.has(options.refName!)) {
+        if (this.hasSchema(options.refName!)) {
           // association
           schema.addAssociation(key, options as AssociationOptions);
         } else {
@@ -54,7 +54,8 @@ export default class SchemaManager {
     return schema;
   }
   removeSchema(name: string) {
-    this.schemas.delete(name);
+    const index = this.schemas.findIndex(schema => schema.name == name);
+    this.schemas.splice(index, 1);
   }
   toJSON() {
     const array: Schema[] = [];
