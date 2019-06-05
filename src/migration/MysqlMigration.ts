@@ -24,6 +24,14 @@ export = class MysqlMigration implements Migration {
     const sql = `create table if not exists ${schema.table} (${schema.columns.map(column => this.genCreateColumn(column)).join(', ')})`;
     await session.nativeUpdate(sql);
   }
+  async renameTable(session: Session, oldName: string, newName: string) {
+    const sql = `alter table ${oldName} rename to ${newName}`;
+    await session.nativeUpdate(sql);
+  }
+  async dropTable(session: Session, name: string) {
+    const sql = `drop table ${name}`;
+    await session.nativeUpdate(sql);
+  }
   async addColumn(session: Session, schema: Schema, column: Column) {
     const sql = `alter table ${schema.table} add ${this.genCreateColumn(column)}`;
     await session.nativeUpdate(sql);
@@ -65,7 +73,7 @@ export = class MysqlMigration implements Migration {
     const schemas = session.schemaManager.schemas;
     await session.nativeUpdate('set foreign_key_checks = 0');
     for (const [name, schema] of schemas.entries()) {
-      const exist = await this.existsTable(session, schema);
+      const exist = await this.existsTable(session, schema.table);
       if (exist) {
         const sql = `drop table ${schema.table}`;
         await session.nativeUpdate(sql);
@@ -76,7 +84,7 @@ export = class MysqlMigration implements Migration {
   async update(session: Session): Promise<void> {
     const schemas = session.schemaManager.schemas;
     for (const [name, schema] of schemas.entries()) {
-      const exist = await this.existsTable(session, schema);
+      const exist = await this.existsTable(session, schema.table);
       if (!exist) {
         await this.createTable(session, schema);
         continue;
@@ -113,9 +121,9 @@ export = class MysqlMigration implements Migration {
       await this.addFKColumn(session, schema, column);
     }
   }
-  async existsTable(session: Session, schema: Schema): Promise<boolean> {
-    const {results, fields} = await session.nativeQuery(`show tables like '${schema.table}'`);
-    return results.length > 0 ? results[0][fields[0]] == schema.table : false;
+  async existsTable(session: Session, name: string): Promise<boolean> {
+    const {results, fields} = await session.nativeQuery(`show tables like '${name}'`);
+    return results.length > 0 ? results[0][fields[0]] == name : false;
   }
   async queryAllColumn(session: Session, schema: Schema): Promise<DatabaseColumn[]> {
     const sql = `select column_name as name, is_nullable as nullable, column_type as type from information_schema.columns where table_schema = database() && table_name = '${schema.table}'`;

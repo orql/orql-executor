@@ -35,12 +35,26 @@ export default interface Migration {
   createTable(session: Session, schema: Schema): Promise<void>;
 
   /**
+   * 修改表名
+   * @param session
+   * @param oldName
+   * @param newName
+   */
+  renameTable(session: Session, oldName: string, newName: string): Promise<void>;
+
+  /**
    * 是否存在表
    * @param session
-   * @param Session
-   * @param schema
+   * @param name
    */
-  existsTable(session, Session, schema: Schema): Promise<boolean>;
+  existsTable(session: Session, name: string): Promise<boolean>;
+
+  /**
+   * 删除表
+   * @param session
+   * @param name
+   */
+  dropTable(session: Session, name: string): Promise<void>;
 
   /**
    * 添加列

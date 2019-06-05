@@ -33,24 +33,30 @@ export = class Sqlite3Migration implements Migration {
     }
     return column.length != undefined && column.length > 0 ? `${type}(${column.length})` : `${type}`;
   }
+  async renameTable(session: Session, oldName: string, newName: string) {
+
+  }
   async drop(session: Session): Promise<void> {
     const schemas = session.schemaManager.schemas;
     for (const [name, schema] of schemas.entries()) {
-      const exist = await this.existTable(session, schema);
+      const exist = await this.existsTable(session, schema.name);
       if (exist) {
         await session.nativeUpdate(`drop table ${schema.table}`);
       }
     }
   }
-  async existTable(session: Session, schema: Schema): Promise<boolean> {
-    const result = await session.nativeQuery(`select count(*) FROM sqlite_master where type='table' and name='${schema.table}'`);
+  async existsTable(session: Session, name: string): Promise<boolean> {
+    const result = await session.nativeQuery(`select count(*) FROM sqlite_master where type='table' and name='${name}'`);
     return result[0].get(0) == 1;
+  }
+  async dropTable(session: Session, name: string) {
+
   }
   async update(session: Session): Promise<void> {
     const database = session.configuration.connectionOptions!.database;
     const schemas = session.schemaManager.schemas;
-    for (const [name, schema] of schemas.entries()) {
-      const exist = await this.existTable(session, schema);
+    for (const schema of schemas) {
+      const exist = await this.existsTable(session, schema.table);
       if (!exist) {
         await this.createTable(session, schema);
       } else {
@@ -71,11 +77,6 @@ export = class Sqlite3Migration implements Migration {
 
   async addFKColumn(session: Session, schema: Schema, column: Column) {
   }
-
-  async existsTable(session, Session, schema: Schema): Promise<boolean> {
-    return false;
-  }
-
   async queryAllColumn(session: Session, schema: Schema): Promise<DatabaseColumn[]> {
     return [];
   }
