@@ -8,6 +8,12 @@ export interface DatabaseColumn {
   length?: number;
 }
 
+export interface DatabaseFK {
+  name: string;
+  ref: string;
+  refKey: string;
+}
+
 export default interface Migration {
   /**
    * 创建全部表
@@ -94,5 +100,44 @@ export default interface Migration {
    * @param oldField
    */
   updateColumn(session: Session, schema: Schema, column: Column, oldField?: string): Promise<void>;
+
+  /**
+   * 查询外键
+   * @param session
+   * @param schema
+   * @param column
+   */
+  queryFK(session: Session, schema: Schema, column: Column): Promise<DatabaseFK | undefined>;
+
+  /**
+   * 添加外键
+   * @param session
+   * @param schema
+   * @param column
+   */
+  addFK(session: Session, schema: Schema, column: Column): Promise<void>;
+
+  /**
+   * 判断外键有无更改
+   * @param column
+   * @param fkColumn
+   */
+  shouldUpdateFK(column: Column, fkColumn: DatabaseFK): boolean;
+
+  /**
+   * 修改外键
+   * @param session
+   * @param schema
+   * @param column
+   */
+  updateFK(session: Session, schema: Schema, column: Column): Promise<void>;
+
+  /**
+   * 删除外键
+   * @param session
+   * @param schema
+   * @param column
+   */
+  dropFK(session: Session, schema: Schema, column: Column): Promise<void>;
 
 }

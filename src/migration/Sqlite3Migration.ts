@@ -1,4 +1,4 @@
-import Migration, {DatabaseColumn} from './Migration';
+import Migration, {DatabaseColumn, DatabaseFK} from './Migration';
 import Session from '../Session';
 import Schema, {Column} from '../Schema';
 
@@ -91,5 +91,21 @@ export = class Sqlite3Migration implements Migration {
 
   async updateColumn(session: Session, schema: Schema, column: Column, oldField?: string) {
     return undefined;
+  }
+
+  async addFK(session: Session, schema: Schema, column: Column) {
+  }
+
+  async queryFK(session: Session, schema: Schema, column: Column): Promise<DatabaseFK | undefined> {
+    return undefined;
+  }
+
+  shouldUpdateFK(column: Column, fkColumn: DatabaseFK): boolean {
+    return false;
+  }
+
+  async updateFK(session: Session, schema: Schema, column: Column) {
+  }
+  async dropFK(session: Session, schema: Schema, column: Column) {
   }
 }

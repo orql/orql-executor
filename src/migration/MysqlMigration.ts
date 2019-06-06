@@ -1,13 +1,6 @@
-import Migration, {DatabaseColumn} from './Migration';
+import Migration, {DatabaseColumn, DatabaseFK} from './Migration';
 import Session from '../Session';
 import Schema, {Column, DataType} from '../Schema';
-import {QueryResult} from '../database/Database';
-
-interface DatabaseFKColumn {
-  name: string;
-  ref: string;
-  refKey: string;
-}
 
 export = class MysqlMigration implements Migration {
   async create(session: Session): Promise<void> {
@@ -108,17 +101,17 @@ export = class MysqlMigration implements Migration {
     }
   }
   async updateFks(session: Session, schema: Schema) {
-    const fkColumns = await this.queryAllFKColumn(session, schema);
+    const fkColumns = await this.queryAllFK(session, schema);
     const refColumns = schema.columns.filter(column => column.refKey);
     for (const column of refColumns) {
       const fkColumn = fkColumns.find(fkColumn => fkColumn.name == column.field);
       if (fkColumn) {
-        const change = this.shouldUpdateFKColumn(column, fkColumn);
-        if (change) await this.updateFKColumn(session, schema, column);
+        const change = this.shouldUpdateFK(column, fkColumn);
+        if (change) await this.updateFK(session, schema, column);
         continue;
       }
       // 外键不存在
-      await this.addFKColumn(session, schema, column);
+      await this.addFK(session, schema, column);
     }
   }
   async existsTable(session: Session, name: string): Promise<boolean> {
@@ -141,7 +134,7 @@ export = class MysqlMigration implements Migration {
     const [type, length] = this.getTypeAndLength(result['type']);
     return {name: result.name, nullable: result.nullable == 'YES', type, length};
   }
-  getDatabaseFKColumn(result: any): DatabaseFKColumn {
+  getDatabaseFKColumn(result: any): DatabaseFK {
     return {name: result.name, ref: result.ref, refKey: result.refKey};
   }
   shouldUpdateColumn(column: Column, databaseColumn: DatabaseColumn): boolean {
@@ -150,13 +143,13 @@ export = class MysqlMigration implements Migration {
     if (column.length != undefined && column.length != databaseColumn.length) change = true;
     if (!column.primaryKey) {
       // 要求必须，但是可以为空，需要更改
-      if (column.required == true && databaseColumn.nullable == true) change = true;
+      if (column.required && databaseColumn.nullable) change = true;
       // 不要求必须，但是不可以为空，需要更改
-      if (column.required == false && databaseColumn.nullable != true) change = true;
+      if (!column.required && !databaseColumn.nullable) change = true;
     }
     return change;
   }
-  shouldUpdateFKColumn(column: Column, fkColumn: DatabaseFKColumn): boolean {
+  shouldUpdateFK(column: Column, fkColumn: DatabaseFK): boolean {
     // 外键已指向另外表
     return column.ref!.table != fkColumn.ref;
   }
@@ -165,23 +158,26 @@ export = class MysqlMigration implements Migration {
     if (!arr) return [type, undefined];
     return [arr[1], parseInt(arr[2])];
   }
-  async addFKColumn(session: Session, schema: Schema, column: Column) {
+  async addFK(session: Session, schema: Schema, column: Column) {
     const sql = `alter table ${schema.name} add constraint ${this.genFK(schema, column)} foreign key(${column.field}) REFERENCES ${column.ref!.table}(${column.ref!.getIdColumn()!.field})`;
     await session.nativeUpdate(sql);
   }
-  async queryFKColumn(session: Session, schema: Schema, column: Column): Promise<DatabaseFKColumn | undefined> {
+  async queryFK(session: Session, schema: Schema, column: Column): Promise<DatabaseFK | undefined> {
     const sql = `select column_name as name, referenced_table_name as ref, referenced_column_name as refKey from information_schema.key_column_usage where constraint_schema = database() && table_name = '${schema.table}' && constraint_name <> 'PRIMARY' && column_name = '${column.field}'`;
     const {results} = await session.nativeQuery(sql);
     if (results.length == 0) return;
     return this.getDatabaseFKColumn(results[0]);
   }
-  async updateFKColumn(session: Session, schema: Schema, column: Column) {
-    await session.nativeUpdate(`alter table ${schema.table} drop foreign key ${this.genFK(schema, column)}`);
-    await this.addFKColumn(session, schema, column);
+  async updateFK(session: Session, schema: Schema, column: Column) {
+    await this.dropFK(session, schema, column);
+    await this.addFK(session, schema, column);
   }
-  async queryAllFKColumn(session: Session, schema: Schema): Promise<DatabaseFKColumn[]> {
+  async queryAllFK(session: Session, schema: Schema): Promise<DatabaseFK[]> {
     const sql = `select column_name as name, referenced_table_name as ref, referenced_column_name as refKey from information_schema.key_column_usage where constraint_schema = database() && table_name = '${schema.table}' && constraint_name <> 'PRIMARY'`;
     const {results} = await session.nativeQuery(sql);
     return results.map(result => this.getDatabaseFKColumn(result));
+  }
+  async dropFK(session: Session, schema: Schema, column: Column) {
+    await session.nativeUpdate(`alter table ${schema.table} drop foreign key ${this.genFK(schema, column)}`);
   }
 }

@@ -41,10 +41,10 @@ export interface ColumnOptions {
 export class Column {
   // 列名
   name: string;
-  readonly schemaManager: SchemaManager;
+  readonly schema: Schema;
   readonly options: ColumnOptions;
-  constructor(schemaManager: SchemaManager, name: string, options: ColumnOptions) {
-    this.schemaManager = schemaManager;
+  constructor(schema: Schema, name: string, options: ColumnOptions) {
+    this.schema = schema;
     this.name = name;
     this.options = options;
   }
@@ -55,7 +55,7 @@ export class Column {
     return this.options.generatedKey || false;
   }
   get ref(): Schema | undefined {
-    return this.schemaManager.getSchema(this.options.refName!);
+    return this.schema.schemaManager.getSchema(this.options.refName!);
   }
   get refKey(): boolean {
     return this.options.refKey == true;
@@ -190,8 +190,8 @@ export default class Schema {
   private idColumn?: Column;
   readonly columns: Column[] = [];
   readonly options: SchemaOptions;
-  private associations: Association[] = [];
-  private schemaManager: SchemaManager;
+  readonly associations: Association[] = [];
+  readonly schemaManager: SchemaManager;
   constructor(schemaManager: SchemaManager, name: string, options: SchemaOptions = {}) {
     this.schemaManager = schemaManager;
     this.name = name;
@@ -202,7 +202,7 @@ export default class Schema {
   }
 
   private createColumn(name: string, options: ColumnOptions): Column {
-    const column = new Column(this.schemaManager, name, options);
+    const column = new Column(this, name, options);
     if (column.primaryKey) this.idColumn = column;
     return column;
   }
@@ -244,7 +244,7 @@ export default class Schema {
    * @param name
    */
   hasColumn(name: string): boolean {
-    return this.columns.findIndex(column => column.name == name) >= 0;
+    return this.columns.find(column => column.name == name) != undefined;
   }
 
   /**
@@ -252,16 +252,7 @@ export default class Schema {
    * @param name
    */
   hasAssociation(name: string): boolean {
-    return this.associations.findIndex(association => association.name == name) >= 0;
-  }
-
-  /**
-   * 删除association
-   * @param name
-   */
-  deleteAssociation(name: string) {
-    const index = this.associations.findIndex(association => association.name == name);
-    if (index >= 0) this.associations.splice(index, 1);
+    return this.associations.find(association => association.name == name) != undefined;
   }
 
   /**
@@ -299,14 +290,8 @@ export default class Schema {
     this.addColumn(name, {type, refKey: true, refName, length});
   }
 
-  /**
-   * 添加association
-   * @param name
-   * @param options
-   */
-  addAssociation(name: string, options: AssociationOptions): Schema {
+  private createAssociation(name: string, options: AssociationOptions) {
     const association = new Association(this.schemaManager, name, this, options);
-    this.associations.push(association);
     switch (association.type) {
       case AssociationType.HasOne:
       case AssociationType.HasMany:
@@ -320,8 +305,57 @@ export default class Schema {
         this.addRefColumn(association.refKey, refId.type, refId.length, association.refName);
         break;
     }
+    return association;
+  }
+
+  /**
+   * 添加association
+   * @param name
+   * @param options
+   */
+  addAssociation(name: string, options: AssociationOptions): Schema {
+    const association = this.createAssociation(name, options);
+    this.associations.push(association);
     return this;
   }
+
+  /**
+   * 删除association
+   * @param name
+   */
+  deleteAssociation(name: string) {
+    const index = this.associations.findIndex(association => association.name == name);
+    if (index >= 0) this.associations.splice(index, 1);
+  }
+
+  /**
+   * 修改association
+   * @param oldName
+   * @param name
+   * @param options
+   */
+  updateAssociation(oldName: string, name: string, options: AssociationOptions) {
+    const association = this.createAssociation(name, options);
+    const index = this.associations.findIndex(association => association.name == oldName);
+    this.associations[index] = association;
+  }
+
+  /**
+   * 获取外键
+   * @param name
+   */
+  getAssociationRefColumn(name: string): Column {
+    const association = this.getAssociation(name)!;
+    switch (association.type) {
+      case AssociationType.HasOne:
+      case AssociationType.HasMany:
+        return association.ref.getColumn(association.refKey)!;
+      case AssociationType.BelongsTo:
+        return this.getColumn(association.refKey)!;
+    }
+    throw new Error('');
+  }
+
   toJSON() {
     return {
       name: this.name,
