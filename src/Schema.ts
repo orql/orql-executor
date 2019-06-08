@@ -36,6 +36,10 @@ export interface ColumnOptions {
   defaultValue?: string;
   // 初始值
   initialValue?: string;
+  // 默认值函数
+  defaultFunction?: Function;
+  // 初始值函数
+  initialFunction?: Function;
 }
 
 export class Column {
@@ -47,6 +51,12 @@ export class Column {
     this.schema = schema;
     this.name = name;
     this.options = options;
+    if (this.options.defaultValue != undefined) {
+      this.options.defaultFunction = new Function(`return ${this.options.defaultFunction}`);
+    }
+    if (this.options.initialValue != undefined) {
+      this.options.initialFunction = new Function(`return ${this.options.initialValue}`);
+    }
   }
   get primaryKey(): boolean {
     return this.options.primaryKey || false;
