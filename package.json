@@ -22,6 +22,6 @@
     "typescript": "^3.2.2"
   },
   "dependencies": {
-    "orql-parser": "0.0.3"
+    "orql-parser": "0.0.4"
   }
 }

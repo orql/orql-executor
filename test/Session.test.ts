@@ -303,3 +303,14 @@ test('test ambiguous params', async () => {
     expect(result.id).toBe(userId);
   });
 });
+
+test('test param path', async () => {
+  await exec(async session => {
+    const id = await session.buildUpdate().add('user', {name: 'n1'});
+    const result = await session.buildQuery()
+      .orql('query user(id = $user.id): {name}')
+      .param('user', {id})
+      .queryOne();
+    expect(result.name).toBe('n1');
+  });
+});
