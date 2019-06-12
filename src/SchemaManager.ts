@@ -33,7 +33,7 @@ export default class SchemaManager {
           const refName = options.refName!;
           let adds: AddAssociation[];
           if (this.addAssociationMap.has(refName)) {
-            adds = this.addAssociationMap[refName];
+            adds = this.addAssociationMap.get(refName)!;
           } else {
             adds = [];
             this.addAssociationMap.set(refName, adds);
