@@ -224,9 +224,9 @@ export default class OrqlToSql {
   }
   private toExp(orqlExp: OrqlExp, parent: Schema, path?: string): SqlExp {
     if (orqlExp instanceof OrqlLogicExp) {
-      const left = this.toExp(orqlExp.left, parent);
+      const left = this.toExp(orqlExp.left, parent, path);
       const op = orqlExp.op == OrqlLogicOp.And ? SqlLogicOp.And : SqlLogicOp.Or;
-      const right = this.toExp(orqlExp.right, parent);
+      const right = this.toExp(orqlExp.right, parent, path);
       return new SqlLogicExp(left, op, right);
     }
     if (orqlExp instanceof OrqlCompareExp) {

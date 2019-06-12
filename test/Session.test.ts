@@ -21,7 +21,7 @@ test('test add user and query by id', async () => {
     const result = await session.buildQuery()
       .orql('query user(id = $id) : {*}')
       .param('id', user.id)
-      .queryOne<User>();
+      .queryOne() as User;
     expect(user.id).toBeDefined();
     expect(result!.id).toBe(user.id);
   });
@@ -37,7 +37,7 @@ test('test add belongsTo and query belongsTo', async () => {
     const result = await session.buildQuery()
       .orql('query user(id = $id) : {*, role: {*}}')
       .param('id', user.id)
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.role!.id).toBe(role.id);
   });
 });
@@ -50,7 +50,7 @@ test('test query by exp and', async () => {
       .orql('query user(name = $name && password = $password) : {*}')
       .param('name', user.name)
       .param('password', user.password)
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.id).toBe(user.id);
   });
 });
@@ -67,7 +67,7 @@ test('test query hasMany', async () => {
     const result = await session.buildQuery()
       .orql('query user(id = $id) : {*, posts: [*]}')
       .param('id', user.id)
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.posts!.length).toBe(count);
   });
 });
@@ -81,7 +81,7 @@ test('test query hasOne', async () => {
     const result = await session.buildQuery()
       .orql('query userInfo(id = $id) : {*, user : {*}}')
       .param('id', info.id)
-      .queryOne<UserInfo>();
+      .queryOne() as UserInfo;
     expect(result!.user!.id).toBe(user.id);
   });
 });
@@ -109,7 +109,7 @@ test('test add and query belongsToMany', async () => {
       const result = await session.buildQuery()
         .orql('query post(id = $id) : {*, tags : [*]}')
         .param('id', post.id)
-        .queryOne<Post>();
+        .queryOne() as Post;
       expect(result!.tags!.length).toBe(count);
     }
   });
@@ -137,7 +137,7 @@ test('test update', async () => {
     const result = await session.buildQuery()
       .orql('query user(id = $id) : {*}')
       .param('id', user.id)
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.name).toBe('n2');
   });
 });
@@ -163,7 +163,7 @@ test('test order', async () => {
     }
     const result = await session.buildQuery()
       .orql('query user(order id desc) : {*}')
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.name).toBe(`n${count - 1}`);
   });
 });
@@ -179,7 +179,7 @@ test('test page', async () => {
       .orql('query user : [*]')
       .limit(5)
       .offset(0)
-      .queryAll<User>();
+      .queryAll() as User[];
     expect(result.length).toBe(count / 2);
   });
 });
@@ -200,7 +200,7 @@ test('test nest page', async () => {
       .orql('query user : [posts: [*]]')
       .limit(count)
       .offset(0)
-      .queryAll<User>();
+      .queryAll() as User[];
     expect(result.length).toBe(count);
     result.forEach(
       user => expect(user.posts!.length).toBe(postCount));
@@ -214,7 +214,7 @@ test('test like', async () => {
     const result = await session.buildQuery()
       .orql('query user(name like $key) : {*}')
       .param('key', 'n%')
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.name).toBe(user.name);
   });
 });
@@ -225,7 +225,7 @@ test('test eq null', async () => {
     await session.buildUpdate().add('user', user);
     const result = await session.buildQuery()
       .orql('query user(password = null) : {*}')
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.name).toBe('n1');
   });
 });
@@ -236,7 +236,7 @@ test('test not eq', async () => {
     await session.buildUpdate().add('user', user);
     const result = await session.buildQuery()
       .orql(`query user(name != 'n1') : {*}`)
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result).toBeUndefined();
   });
 });
@@ -247,7 +247,7 @@ test('test not eq null', async () => {
     await session.buildUpdate().add('user', user);
     const result = await session.buildQuery()
       .orql(`query user(name != null) : {*}`)
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.name).toBe('n1');
   });
 });
@@ -259,7 +259,7 @@ test('test nest exp', async () => {
     const result = await session.buildQuery()
       .orql(`query user((id = $id)) : {*}`)
       .param('id', user.id)
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.name).toBe('n1');
   });
 });
@@ -271,7 +271,7 @@ test('test initialValue', async () => {
     const result = await session.buildQuery()
       .orql('query user (id = $id) : {*}')
       .param('id', id)
-      .queryOne<User>();
+      .queryOne() as User;
     expect(result!.name).toBe('n1');
     expect(result!.deleted).toBeFalsy();
   });
@@ -284,7 +284,22 @@ test('test defaultValue', async () => {
     const result = await session.buildQuery()
       .orql('query user (id = $id) : {*}')
       .param('id', id)
-      .queryOne<User>();
+      .queryOne();
     expect(result!.createAt).not.toBeNull();
+  });
+});
+
+test('test ambiguous params', async () => {
+  await exec(async session => {
+    const roleId = await session.buildUpdate()
+      .add('role', {name: 'r1'});
+    const userId = await session.buildUpdate()
+      .add('user', {name: 'u1', password: '1234', role: {id: roleId}});
+    const result = await session.buildQuery()
+      .orql('query user(name = $name && password = $password): {id, role: {id}}')
+      .param('name', 'u1')
+      .param('password', '1234')
+      .queryOne();
+    expect(result.id).toBe(userId);
   });
 });

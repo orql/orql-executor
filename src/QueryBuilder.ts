@@ -37,16 +37,15 @@ export default class QueryBuilder {
     this._params[key] = value;
     return this;
   }
-  async queryOne<T>(): Promise<T | undefined> {
+  async queryOne(): Promise<any | undefined> {
     return await this.session.query(this._orql!, this._params);
   }
-  async queryAll<T>(): Promise<T[]> {
+  async queryAll(): Promise<any[]> {
     if (this._page != undefined && this._size != undefined) {
       this._offset = (this._page - 1) * this._size;
       this._limit = this._size;
     }
-    const result = await this.session.query(this._orql!, this._params, {offset: this._offset, limit: this._limit});
-    return result as T[];
+    return await this.session.query(this._orql!, this._params, {offset: this._offset, limit: this._limit});
   }
   async count(): Promise<number> {
     return await this.session.query(this._orql!, this._params);

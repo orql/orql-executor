@@ -6,7 +6,7 @@ export default class UpdateBuilder {
   constructor(session: Session) {
     this.session = session;
   }
-  async add(name: string, data: Params) {
+  async add(name: string, data: Params): Promise<any> {
     const schema = this.session.getSchema(name)!;
     const items: string[] = [];
     for (const key of Object.keys(data)) {
@@ -21,6 +21,7 @@ export default class UpdateBuilder {
     const idValue = await this.session.add(orql, data);
     const idColumn = schema.getIdColumn()!;
     if (idColumn && idColumn.generatedKey) data[idColumn.name] = idValue;
+    return idValue;
   }
   async delete(name: string, data: Params) {
     const schema = this.session.getSchema(name)!;
