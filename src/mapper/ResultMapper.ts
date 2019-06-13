@@ -1,7 +1,7 @@
 import {DataType} from '../Schema';
 
 export class ResultRoot {
-  readonly id: ResultId;
+  readonly id?: ResultId;
   readonly columns: ResultItem[];
   constructor(id: ResultId, columns: Array<ResultItem>) {
     this.id = id;
@@ -62,7 +62,9 @@ export default class ResultMapper {
     // 按id切割, {id: {}[]}
     const idListMap = new Map<object, any[]>();
     for (const result of results) {
-      const idValue = result[resultId.field];
+      // 没有id的，全部按单个切割
+      // TODO 优化为查出的键关联作为主键
+      const idValue = resultId ? result[resultId.field] : result;
       // 避免undefined列被映射
       if (idValue == undefined) continue;
       if (! idListMap.has(idValue)) idListMap.set(idValue, []);
@@ -70,9 +72,11 @@ export default class ResultMapper {
     }
     for (const [idValue, idResults] of idListMap) {
       const childData: any = {};
-      // 从第一列获取数据
+      // 从第一列获取id数据
       const idResult = idResults[0];
-      childData[resultId.column] = idValue;
+      if (resultId) {
+        childData[resultId.column] = idValue;
+      }
       for (const resultItem of resultRoot.columns) {
         if (resultItem instanceof ResultColumn) {
           childData[resultItem.column] = idResult[resultItem.field];

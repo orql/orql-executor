@@ -190,9 +190,10 @@ export default class OrqlToSql {
           }
         }
       }
-      if (! hasSelectId && op == 'query' && hasSelect) {
+      if (! hasSelectId && op == 'query' && hasSelect && idColumn) {
         // 没有select id而且是query而且有select插入id进行mapper
-        select.push(new SqlColumn(idColumn!.field, currentPath));
+        // 没有id的不加入进来，在mapper把每一个列都当成唯一的
+        select.push(new SqlColumn(idColumn.field, currentPath));
       }
     }
     let query: SqlQuery;

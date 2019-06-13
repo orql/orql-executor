@@ -88,7 +88,7 @@ test('test query hasOne', async () => {
 
 test('test add and query belongsToMany', async () => {
   await exec(async session => {
-    const count = 2;
+    const count = 3;
     const posts: Post[] = [];
     const tags: Tag[] = [];
     for (let i = 0; i < count; i ++) {
@@ -112,6 +112,8 @@ test('test add and query belongsToMany', async () => {
         .queryOne() as Post;
       expect(result!.tags!.length).toBe(count);
     }
+    const ids = await session.buildQuery().orql('query postTag: [postId, tagId]').queryAll();
+    expect(ids.length).toBe(count * count);
   });
 });
 

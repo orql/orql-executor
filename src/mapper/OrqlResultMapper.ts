@@ -68,11 +68,13 @@ export default class OrqlResultMapper {
         }
       }
     }
-    if (resultId == undefined) {
+    if (!resultId) {
       // 插入id用于mappe
-      const idColumn = schema.getIdColumn()!;
-      const columnPath = path != undefined ? `${path}_${idColumn.field}` : idColumn.field;
-      resultId = new ResultId(idColumn.name, idColumn.type, columnPath);
+      const idColumn = schema.getIdColumn();
+      if (idColumn) {
+        const columnPath = path != undefined ? `${path}_${idColumn.field}` : idColumn.field;
+        resultId = new ResultId(idColumn.name, idColumn.type, columnPath);
+      }
     }
     return new ResultRoot(resultId!, columns);
   }
