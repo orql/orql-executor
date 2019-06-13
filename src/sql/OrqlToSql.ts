@@ -319,8 +319,8 @@ export default class OrqlToSql {
         // 非外键而且不ignore
         if (!column.refKey && ignores.indexOf(column.name) < 0) {
           columns.push(new SqlColumn(column.field));
-          if (column.options.initialFunction && params) {
-            params[column.name] = column.initialFunction();
+          if (column.options.initialValue && params) {
+            params[column.name] = column.options.initialFunction();
           } else if (column.options.defaultValue && params && params[column] == undefined) {
             params[column.name] = column.options.defaultFunction();
           }
