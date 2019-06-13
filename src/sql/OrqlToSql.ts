@@ -298,9 +298,9 @@ export default class OrqlToSql {
         const column = schema.getColumn(item.name);
         columns.push(new SqlColumn(column.field));
         if (column.options.initialValue && params) {
-          params[column.name] = (new Function(`return ${column.options.initialValue}`))();
+          params[column.name] = column.options.initialFunction();
         } else if (column.options.defaultValue && params && params[column] == undefined) {
-          params[column.name] = (new Function(`return ${column.options.defaultValue}`))();
+          params[column.name] = column.options.defaultFunction();
         }
         sqlParams.push(new SqlParam(column.name));
       } else if (schema.hasAssociation(item.name)) {

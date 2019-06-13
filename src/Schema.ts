@@ -52,7 +52,7 @@ export class Column {
     this.name = name;
     this.options = options;
     if (this.options.defaultValue != undefined) {
-      this.options.defaultFunction = new Function(`return ${this.options.defaultFunction}`);
+      this.options.defaultFunction = new Function(`return ${this.options.defaultValue}`);
     }
     if (this.options.initialValue != undefined) {
       this.options.initialFunction = new Function(`return ${this.options.initialValue}`);

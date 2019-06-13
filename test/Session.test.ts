@@ -285,7 +285,7 @@ test('test defaultValue', async () => {
       .orql('query user (id = $id) : {*}')
       .param('id', id)
       .queryOne();
-    expect(result!.createAt).not.toBeNull();
+    expect(result.createAt).not.toBeNull();
   });
 });
 
