@@ -1,7 +1,7 @@
 orql-executor
 ---
 
-orql(Object Relational Query Language)是一种对象关系查询语言,使用键和树描述对象结构.orql-executor将orql生成sql,查询后映射成对象.
+orql（Object Relational Query Language）是一种对象关系查询语言，使用键（a: {b: c: [d]}）描述对象的树结构。orql还包含表达式和排序等。orql-executor用于执行orql的增删改查操作。
 
 # 运行环境
 

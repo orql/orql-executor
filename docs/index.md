@@ -14,7 +14,7 @@ yarn add sqlite3
 
 ## 创建实例
 
-使用configuration初始化orqlExecutor实例,实例用于管理数据库连接和项目实体等,提供添加schema,创建session等方法.
+使用configuration初始化OrqlExecutor实例,实例用于管理数据库连接和项目实体等,提供添加schema,创建session等方法.
 
 typescript
 
